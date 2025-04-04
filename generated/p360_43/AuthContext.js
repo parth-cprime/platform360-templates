@@ -1,27 +1,42 @@
-import React, { createContext, useState, useEffect } from 'react';
-import authService from '../services/authService';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (token) {
-      setUser(authService.getUserFromToken(token));
+      // Verify token validity
+      axios.get('/api/auth/verify', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          setUser(res.data.user);
+          setLoading(false);
+        })
+        .catch(() => {
+          setUser(null);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
   }, []);
 
   const login = async (username, password) => {
-    try {
-      const userData = await authService.login(username, password);
-      localStorage.setItem('token', userData.token);
-      setUser(userData.user);
-    } catch (err) {
-      console.error('Login failed', err);
-      throw err;
-    }
+    const res = await axios.post('/api/auth/login', { username, password });
+    const { token } = res.data;
+    localStorage.setItem('token', token);
+    setUser(res.data.user);
   };
 
   const logout = () => {
@@ -29,15 +44,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const authContextValue = {
+  const value = {
     user,
     login,
     logout,
   };
 
   return (
-    <AuthContext.Provider value={authContextValue}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
