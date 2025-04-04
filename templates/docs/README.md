@@ -1,10 +1,3 @@
 # DOCS
 
-This directory contains docs templates and prompts for Platform360.
-
-## Structure
-- `templates/`: Contains code and documentation templates
-- `prompts/`: Contains prompts for code generation and analysis
-
-## Usage
-Refer to the main README.md for usage instructions.
+This directory contains docs for Platform360.
