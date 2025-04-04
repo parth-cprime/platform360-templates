@@ -6,6 +6,7 @@
 // Description: {{featureDescription}}
 // Author: {{author}}
 // Date: {{date}}
+// Version: {{version}}
 
 // Implementation details will be generated here
 ```
