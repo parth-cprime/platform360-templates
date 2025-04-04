@@ -1,36 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getFeedback } from './api';
+import React, { useContext } from 'react';
+import { AuthContext } from '../auth/AuthContext';
 
-const Dashboard = () => {
-  const [feedback, setFeedback] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getFeedback();
-        setFeedback(data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-    fetchData();
-  }, []);
+function Dashboard() {
+  const { user, logout } = useContext(AuthContext);
 
   return (
     <div>
-      <h1>Feedback Dashboard</h1>
-      {error && <div className="error">{error}</div>}
-      <ul>
-        {feedback.map((item) => (
-          <li key={item.id}>
-            <Link to={`/feedback/${item.id}`}>{item.title}</Link>
-          </li>
-        ))}
-      </ul>
+      <h1>Welcome, {user.name}!</h1>
+      {/* Dashboard content */}
+      <button onClick={logout}>Logout</button>
     </div>
   );
-};
+}
 
 export default Dashboard;
