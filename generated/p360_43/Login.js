@@ -1,17 +1,20 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../auth/AuthContext';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-function Login() {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const { login } = useContext(AuthContext);
-
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await login(username, password);
+      navigate('/');
     } catch (err) {
       setError('Invalid username or password');
     }
@@ -19,15 +22,16 @@ function Login() {
 
   return (
     <div>
-      <h1>Login</h1>
-      {error && <div>{error}</div>}
+      <h2>Login</h2>
+      {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>
-          <input
+          <input 
             type="text"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
+            required
           />
         </div>
         <div>
@@ -35,13 +39,14 @@ function Login() {
           <input
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
         <button type="submit">Login</button>
       </form>
     </div>
   );
-}
+};
 
 export default Login;
