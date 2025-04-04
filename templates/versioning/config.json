@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "templates": [
+    {
+      "path": "templates/code/feature-implementation.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.308Z"
+    },
+    {
+      "path": "templates/code/api-endpoint.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/code/database-schema.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/validation/input-validation.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/testing/unit-test.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/testing/integration-test.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/versioning/version-schema.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/security/node-security.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/security/java-security.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    },
+    {
+      "path": "templates/security/react-security.md",
+      "version": "1.0.0",
+      "lastUpdated": "2025-04-04T18:24:19.310Z"
+    }
+  ]
+}
