@@ -1,0 +1,136 @@
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Login from './components/Login';
+import Home from './components/Home';
+import SecureRoute from './components/SecureRoute';
+
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/login" component={Login} />
+        <SecureRoute exact path="/" component={Home} />
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+
+// Login.js
+import React, { useState } from 'react';
+import axios from 'axios';
+
+function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Input validation
+      if (!username || !password) {
+        throw new Error('Please enter username and password');
+      }
+
+      // Authentication
+      const response = await axios.post('/api/login', { username, password });
+      localStorage.setItem('token', response.data.token);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Invalid username or password');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+}
+
+export default Login;
+
+// Home.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function Home() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // Authorization
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/user', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
+
+  return (
+    <div>
+      <h2>Welcome, {user ? user.username : 'Guest'}</h2>
+      {user && <button onClick={handleLogout}>Logout</button>}
+    </div>
+  );
+}
+
+export default Home;
+
+// SecureRoute.js
+import React from 'react';
+import { Route, Redirect } from 'react-router-dom';
+
+function SecureRoute({ component: Component, ...rest }) {
+  const isAuthenticated = () => {
+    // Session management
+    const token = localStorage.getItem('token');
+    return !!token;
+  };
+
+  return (
+    <Route
+      {...rest}
+      render={(props) =>
+        isAuthenticated() ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to="/login" />
+        )
+      }
+    />
+  );
+}
+
+export default SecureRoute;
