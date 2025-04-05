@@ -1,0 +1,8 @@
+import validator from 'validator';
+
+function validateInput(input) {
+  if (!validator.isAlphanumeric(input)) {
+    throw new Error('Invalid input');
+  }
+  // Additional validation logic
+}
