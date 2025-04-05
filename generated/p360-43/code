@@ -1,0 +1,66 @@
+Here is the code for task p360-43 using the provided Java security template:
+
+```java
+import java.security.SecureRandom;
+
+public class PasswordGenerator {
+  
+  public static void main(String[] args) {  
+    String password = generatePassword(12);
+    System.out.println("Generated Password: " + password);
+  }
+
+  public static String generatePassword(int length) {
+    // Validate input
+    if (length < 8) {
+      throw new IllegalArgumentException("Password length must be at least 8 characters");
+    }
+    
+    // Define character sets to choose from  
+    String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+    String numbers = "0123456789";
+    String specialChars = "!@#$%^&*()_+-=[];,./{}:<>?";
+    
+    // Combine character sets into one string
+    String allChars = upperCase + lowerCase + numbers + specialChars;
+    
+    // Use SecureRandom to generate password
+    SecureRandom random = new SecureRandom();
+    StringBuilder password = new StringBuilder();
+    
+    // Ensure password has at least one of each required char type
+    password.append(getRandomChar(upperCase, random)); 
+    password.append(getRandomChar(lowerCase, random));
+    password.append(getRandomChar(numbers, random)); 
+    password.append(getRandomChar(specialChars, random));
+
+    // Generate remaining characters
+    for (int i = 4; i < length; i++) {
+      password.append(getRandomChar(allChars, random));  
+    }
+    
+    return password.toString();
+  }
+
+  private static char getRandomChar(String charSet, SecureRandom random) {
+    int randomIndex = random.nextInt(charSet.length());
+    return charSet.charAt(randomIndex);
+  }
+
+}
+```
+
+This code defines a `PasswordGenerator` class with a `main` method that generates a 12 character secure random password by calling the `generatePassword` method.
+
+The `generatePassword` method takes the desired password length as input and validates it is at least 8 characters. It defines the allowed character sets (uppercase, lowercase, numbers, special chars) and combines them into one string.
+
+It uses `SecureRandom` to generate a random password. It first appends one random character from each required character type to ensure the password has at least one uppercase, lowercase, number and special character. 
+
+It then generates the remaining characters randomly from the combined character set until the desired length is reached.
+
+The password is returned as a string. 
+
+The `getRandomChar` helper method selects a random character from the provided character set using `SecureRandom`.
+
+This follows security best practices by using a secure random number generator, requiring a minimum password length, and ensuring the password has a mix of character types. Let me know if you have any other questions!
