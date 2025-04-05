@@ -1,59 +1,48 @@
-/*
- * Application Type: Web Application
- * Security Level: High
- * Authentication Method: Multi-factor authentication 
- * Data Sensitivity: Sensitive PII and financial data
- */
+import java.security.SecureRandom;
 
-// Use secure framework like Spring Security
-import org.springframework.security.core.*;
-import org.springframework.security.config.*;
-import org.springframework.security.web.*;
-import org.owasp.esapi.*;
+public class PasswordGenerator {
+  
+  public static void main(String[] args) {  
+    String password = generatePassword(12);
+    System.out.println("Generated Password: " + password);
+  }
 
-// Input validation using OWASP ESAPI
-String safeParam = ESAPI.validator().getValidInput("UserController", userInput, "SafeString", 200, false);
-
-// Secure authentication 
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-      http
-        .csrf().disable()
-        .authorizeRequests()
-        .antMatchers("/admin/**").hasRole("ADMIN")
-        .anyRequest().authenticated()
-        .and()
-        .formLogin()
-        .loginPage("/login") 
-        .permitAll()
-        .and()
-        .logout()
-        .logoutSuccessUrl("/login?logout")
-        .permitAll(); 
+  public static String generatePassword(int length) {
+    // Validate input
+    if (length < 8) {
+      throw new IllegalArgumentException("Password length must be at least 8 characters");
     }
+    
+    // Define character sets to choose from  
+    String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+    String numbers = "0123456789";
+    String specialChars = "!@#$%^&*()_+-=[];,./{}:<>?";
+    
+    // Combine character sets into one string
+    String allChars = upperCase + lowerCase + numbers + specialChars;
+    
+    // Use SecureRandom to generate password
+    SecureRandom random = new SecureRandom();
+    StringBuilder password = new StringBuilder();
+    
+    // Ensure password has at least one of each required char type
+    password.append(getRandomChar(upperCase, random)); 
+    password.append(getRandomChar(lowerCase, random));
+    password.append(getRandomChar(numbers, random)); 
+    password.append(getRandomChar(specialChars, random));
+
+    // Generate remaining characters
+    for (int i = 4; i < length; i++) {
+      password.append(getRandomChar(allChars, random));  
+    }
+    
+    return password.toString();
+  }
+
+  private static char getRandomChar(String charSet, SecureRandom random) {
+    int randomIndex = random.nextInt(charSet.length());
+    return charSet.charAt(randomIndex);
+  }
+
 }
-
-// Authorization using roles
-@PreAuthorize("hasRole('ADMIN')")
-public void updateUserProfile(...) { ... }
-
-// Encrypt sensitive data 
-Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
-aes.init(Cipher.ENCRYPT_MODE, secretKey);
-byte[] encryptedData = aes.doFinal(sensitiveData);
-
-// Exception handling
-try {
-   // code that may throw exception
-} catch (SomeSecurityException ex) {
-   // log exception
-   // display generic error message
-} 
-
-// Security logging
-Logger logger = LoggerFactory.getLogger(UserController.class);
-logger.info("User {} updated profile", user.getId());
