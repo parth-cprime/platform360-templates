@@ -1,91 +1,82 @@
-// P360-43: Secure User Registration API
-// Application Type: Web API 
-// Security Level: High
-// Authentication Method: JWT
-// Data Sensitivity: Sensitive PII
+import java.security.*;
+import javax.crypto.*;
+import javax.servlet.*;
+import org.owasp.esapi.*;
+import org.owasp.esapi.codecs.*;
+import org.owasp.esapi.filters.*;
 
-import java.security.SecureRandom;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+public class SecureWebApp implements Filter {
 
-public class UserRegistrationController {
-
-  // Input validation
-  private void validateInput(User user) {
-    if (user.getName() == null || user.getName().isEmpty()) {
-      throw new ValidationException("Name is required");
-    }
-    if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-      throw new ValidationException("Invalid email format");
-    }
-    if (user.getPassword().length < 12) {
-      throw new ValidationException("Password must be at least 12 characters long");
-    }
-  }
-
-  // Secure password hashing
-  private String hashPassword(String password) {
-    try {
-      SecureRandom random = new SecureRandom();
-      byte[] salt = new byte[16];
-      random.nextBytes(salt);
-      
-      PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 310000, 256);
-      SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-      byte[] hash = skf.generateSecret(spec).getEncoded();
-      
-      return BCrypt.hashpw(hash, BCrypt.gensalt());
-    }
-    catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  // Register new user
-  public void registerUser(User user) {
-
-    // Validate user input  
-    validateInput(user);
+    private static final String APP_TYPE = "Web Application";  
+    private static final String SECURITY_LEVEL = "High";
+    private static final String AUTH_METHOD = "Multi-factor";
+    private static final String DATA_SENSITIVITY = "PII"; 
     
-    // Check if user already exists
-    if (userRepo.findByEmail(user.getEmail()) != null) {
-      throw new UserAlreadyExistsException();
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        
+        // 1. Input Validation
+        String username = ESAPI.validator().getValidInput("username", req.getParameter("username"), "SafeString", 50, false);
+        String password = ESAPI.validator().getValidInput("password", req.getParameter("password"), "SafeString", 50, false);
+        
+        // 2. Authentication
+        switch(AUTH_METHOD) {
+            case "Multi-factor":
+                // Implement multi-factor authentication 
+                break;
+            default:
+                // Fail securely if auth method not supported
+                throw new ServletException("Unsupported authentication method"); 
+        }
+        
+        // 3. Authorization 
+        if(!isAuthorized(username)) {
+            throw new AccessControlException("Unauthorized access attempt");
+        }
+         
+        // 4. Session Management
+        HttpSession session = req.getSession(true);
+        session.setAttribute("csrf", ESAPI.randomizer().getRandomString(32, Encoder.CHAR_ALPHANUMERICS));
+        
+        // set other recommended session security attributes...
+        
+        // 5. Data Protection  
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        SecretKey key = KeyGenerator.getInstance("AES").generateKey();
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        
+        // encrypt sensitive data before storing...
+        
+        // 6. Error Handling
+        try {
+            // application code
+        } catch(Throwable t) {
+            // log error details
+            ESAPI.getLogger("Logger").error(Logger.SECURITY_FAILURE, "Encountered error: " + t.getMessage(), t); 
+            // do not return sensitive error details to user
+            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred");
+        }
+        
+        // 7. Logging
+        // log security events
+        ESAPI.getLogger("Logger").info(Logger.SECURITY_SUCCESS, "User login succeeded for: " + username); 
+        
+        // 8. API Security
+        // validate all inputs sent to APIs 
+        // protect against injection using parameterized queries, stored procedures, etc.
+        // apply strong authentication and authorization to APIs
+        
+        // 9. Dependency Security
+        // use vetted, up-to-date libraries and frameworks
+        // monitor for vulnerabilities in dependencies
+        
+        // 10. Infrastructure Security  
+        // harden OS, patch systems
+        // use strong encryption in transit and at rest
+        // protect secrets like API keys and database credentials
+        
+        chain.doFilter(request, response);
     }
-
-    // Hash password  
-    String hashedPassword = hashPassword(user.getPassword());
-    user.setPassword(hashedPassword);
-
-    // Save user
-    userRepo.save(user);
-  }
-}
-
-// Security Configuration
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http
-      .cors().and()
-      .csrf().disable()
-      .authorizeRequests()
-        .antMatchers("/api/register").permitAll()  
-        .anyRequest().authenticated()
-        .and()
-      .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-      .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);        
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
 }
