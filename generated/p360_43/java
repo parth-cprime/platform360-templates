@@ -1,2 +1,71 @@
-session.setAttribute("HttpOnly"); 
-session.setAttribute("Secure");
+// P360-43 - Secure Java Code
+
+import java.security.*;
+import javax.crypto.*;
+import org.owasp.esapi.*;
+import org.owasp.esapi.errors.*;
+
+public class SecureApp {
+
+  private static final String APP_TYPE = "Web Application";
+  private static final String SECURITY_LEVEL = "High"; 
+  private static final String AUTH_METHOD = "Multi-factor authentication";
+  private static final String DATA_SENSITIVITY = "PII";
+
+  public static void main(String[] args) {
+    try {
+      // Initialize security configuration 
+      ESAPI.securityConfiguration().setResourceDirectory("resources");
+
+      // Input validation
+      String validatedInput = ESAPI.validator().getValidInput("User Input", 
+        request.getParameter("input"), "SafeString", 255, false);
+
+      // Authentication
+      User user = authenticateUser(request.getParameter("username"),
+        request.getParameter("password")); 
+      
+      // Authorization
+      if (!isAuthorized(user, "VIEW_RESOURCE")) {
+        throw new AccessControlException("Unauthorized");
+      }
+      
+      // Session management  
+      HttpSession session = request.getSession(true);
+      session.setAttribute("user", user);
+      
+      // Sensitive data handling
+      encryptSensitiveData(user.getSSN()); 
+
+      // Logging
+      ESAPI.getLogger("app_log").info(user + " accessed resource");
+
+      // Return secure response
+      response.setContentType("application/json");
+      ResponseObject resObj = new ResponseObject("Success!");
+      response.getWriter().write(ESAPI.encoder().encodeForHTML(resObj.toString()));
+
+    } catch (ValidationException | AuthenticationException | AccessControlException e) {
+      // Error handling
+      ESAPI.getLogger("app_log").error(Logger.SECURITY_FAILURE, 
+        "Security error occurred - " + e.getMessage(), e);
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+    }
+  }
+
+  // Implement other security controls...
+  
+  private static User authenticateUser(String username, String password) 
+        throws AuthenticationException {
+    // Implementation omitted for brevity
+  }
+
+  private static void encryptSensitiveData(String data) 
+        throws EncryptionException {
+    // Implementation omitted for brevity  
+  }
+
+  private static boolean isAuthorized(User user, String action) {
+    // Check user authorization for action
+  }
+}
