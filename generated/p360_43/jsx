@@ -1,18 +1,14 @@
-import AccessControl from 'accesscontrol';
+import session from 'express-session';
 
-const ac = new AccessControl();
-ac.grant('user')
-  .readOwn('profile')
-  .updateOwn('profile');
-
-ac.grant('admin')
-  .extend('user')
-  .readAny('profile')
-  .updateAny('profile');
-
-function authorizeUser(userId, resource, action) {
-  const permission = ac.can(userId).execute(action).on(resource);
-  if (!permission.granted) {
-    throw new Error('Unauthorized');
-  }
-}
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: true,
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+    },
+  })
+);
