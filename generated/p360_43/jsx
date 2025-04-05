@@ -1,3 +1,46 @@
-app.use(helmet());
-app.use(cors({ origin: 'https://example.com' }));
-app.use(csp({ /* CSP policy */ }));
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+
+function SafeComponent({ userInput }) {
+  const [safeText, setSafeText] = useState('');
+
+  function handleUserInput(input) {
+    // Sanitize the user input 
+    const sanitizedInput = DOMPurify.sanitize(input);
+    
+    // Validate the sanitized input before setting state
+    if (isValid(sanitizedInput)) {
+      setSafeText(sanitizedInput);  
+    } else {
+      // Handle invalid input
+      console.error('Invalid input');
+    }
+  }
+
+  // Validate the sanitized input
+  function isValid(sanitizedInput) {
+    // Add validation logic
+    // Return true if valid, false if invalid
+    return true;
+  }
+
+  return (
+    <div>
+      <h1>Safe React Component</h1>
+      
+      <input 
+        type="text"
+        onChange={(e) => handleUserInput(e.target.value)}
+        value={userInput}
+      />
+
+      <p>Safe Text: {safeText}</p>
+    </div>
+  );
+}
+
+SafeComponent.propTypes = {
+  userInput: PropTypes.string,
+};
+
+export default SafeComponent;
