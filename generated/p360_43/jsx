@@ -1,17 +1,18 @@
-import jwt from 'jsonwebtoken';
+import AccessControl from 'accesscontrol';
 
-function generateToken(user) {
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
-  return token;
-}
+const ac = new AccessControl();
+ac.grant('user')
+  .readOwn('profile')
+  .updateOwn('profile');
 
-function verifyToken(token) {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
-  } catch (error) {
-    throw new Error('Invalid token');
+ac.grant('admin')
+  .extend('user')
+  .readAny('profile')
+  .updateAny('profile');
+
+function authorizeUser(userId, resource, action) {
+  const permission = ac.can(userId).execute(action).on(resource);
+  if (!permission.granted) {
+    throw new Error('Unauthorized');
   }
 }
