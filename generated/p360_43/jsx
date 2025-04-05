@@ -1,6 +1,12 @@
-function errorHandler(err, req, res, next) {
-  console.error(err);
-  res.status(500).json({ error: 'Internal Server Error' });
-}
+import winston from 'winston';
 
-app.use(errorHandler);
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
+
+logger.info('User logged in', { userId: user.id });
