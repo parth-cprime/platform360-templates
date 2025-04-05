@@ -1,42 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState } from 'react';
+import jwtDecode from 'jwt-decode';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token');
-
     if (token) {
-      // Verify token validity
-      axios.get('/api/auth/verify', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => {
-          setUser(res.data.user);
-          setLoading(false);
-        })
-        .catch(() => {
-          setUser(null);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        return null;
+      }
+      return decodedToken;
     }
-  }, []);
+    return null;
+  });
 
-  const login = async (username, password) => {
-    const res = await axios.post('/api/auth/login', { username, password });
-    const { token } = res.data;
+  const login = (token) => {
     localStorage.setItem('token', token);
-    setUser(res.data.user);
+    setUser(jwtDecode(token));
   };
 
   const logout = () => {
@@ -44,15 +27,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;
