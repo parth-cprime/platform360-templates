@@ -1,0 +1,91 @@
+// P360-43: Secure User Registration API
+// Application Type: Web API 
+// Security Level: High
+// Authentication Method: JWT
+// Data Sensitivity: Sensitive PII
+
+import java.security.SecureRandom;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
+public class UserRegistrationController {
+
+  // Input validation
+  private void validateInput(User user) {
+    if (user.getName() == null || user.getName().isEmpty()) {
+      throw new ValidationException("Name is required");
+    }
+    if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+      throw new ValidationException("Invalid email format");
+    }
+    if (user.getPassword().length < 12) {
+      throw new ValidationException("Password must be at least 12 characters long");
+    }
+  }
+
+  // Secure password hashing
+  private String hashPassword(String password) {
+    try {
+      SecureRandom random = new SecureRandom();
+      byte[] salt = new byte[16];
+      random.nextBytes(salt);
+      
+      PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 310000, 256);
+      SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+      byte[] hash = skf.generateSecret(spec).getEncoded();
+      
+      return BCrypt.hashpw(hash, BCrypt.gensalt());
+    }
+    catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  // Register new user
+  public void registerUser(User user) {
+
+    // Validate user input  
+    validateInput(user);
+    
+    // Check if user already exists
+    if (userRepo.findByEmail(user.getEmail()) != null) {
+      throw new UserAlreadyExistsException();
+    }
+
+    // Hash password  
+    String hashedPassword = hashPassword(user.getPassword());
+    user.setPassword(hashedPassword);
+
+    // Save user
+    userRepo.save(user);
+  }
+}
+
+// Security Configuration
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http
+      .cors().and()
+      .csrf().disable()
+      .authorizeRequests()
+        .antMatchers("/api/register").permitAll()  
+        .anyRequest().authenticated()
+        .and()
+      .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+      .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);        
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+}
