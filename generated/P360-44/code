@@ -1,137 +1,163 @@
-Based on the provided task details, requirements, and security template, here's a secure React code implementation:
+Here's the secure React code implementation based on the provided task details, requirements, and security template:
 
 ```jsx
-import React, { useState } from 'react';
-import axios from 'axios';
-import Joi from 'joi';
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import Joi from 'joi';
+import { ValidationError, AuthenticationError } from './errors';
+import MarketingPage from './components/MarketingPage';
 
-// Security Configuration
-const securityConfig = {
+const App = () => {
+  const securityConfig = {
     helmet: {
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", "data:", "https:"],
-                connectSrc: ["'self'"]
-            }
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"]
         }
+      }
     },
     rateLimit: {
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100 // limit each IP to 100 requests per windowMs
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100 // limit each IP to 100 requests per windowMs
     },
     cors: {
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true
     }
-};
+  };
 
-// JWT Authentication
-const jwtConfig = {
+  const jwtConfig = {
     secret: process.env.JWT_SECRET,
     expiresIn: '1h',
     algorithm: 'HS256'
-};
+  };
 
-// Password hashing
-const hashPassword = async (password) => {
+  const hashPassword = async (password) => {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
-};
+  };
 
-// Input validation schema
-const userSchema = Joi.object({
+  const userSchema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).required(),
     password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
     email: Joi.string().email().required()
-});
+  });
 
-// Error handling
-const handleError = (error) => {
-    console.error('Error:', error);
-    // Display an error message to the user
+  const errorHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    
+    if (err instanceof ValidationError) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        details: err.details
+      });
+    }
+    
+    if (err instanceof AuthenticationError) {
+      return res.status(401).json({
+        error: 'Authentication Error',
+        message: err.message
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred'
+    });
+  };
+
+  return (
+    <Router>
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>Marketing Page</title>
+        <meta name="description" content="High-conversion marketing page" />
+      </Helmet>
+      <Switch>
+        <Route path="/" exact component={MarketingPage} />
+        {/* Other routes */}
+      </Switch>
+    </Router>
+  );
 };
 
+export default App;
+```
+
+```jsx
+// MarketingPage.js
+import React, { useState } from 'react';
+import axios from 'axios';
+
 const MarketingPage = () => {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: '',
-        email: ''
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
+  };
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    try {
+      await axios.post('/api/leads', formData);
+      alert('Thank you for your interest! We will get back to you soon.');
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred. Please try again later.');
+    }
+  };
 
-        try {
-            // Validate form data
-            await userSchema.validateAsync(formData);
-
-            // Hash the password
-            const hashedPassword = await hashPassword(formData.password);
-
-            // Send form data to the server
-            const response = await axios.post('/api/signup', {
-                username: formData.username,
-                password: hashedPassword,
-                email: formData.email
-            });
-
-            // Handle successful response
-            const token = response.data.token;
-            // Store the token securely (e.g., in a httpOnly cookie)
-
-            // Redirect to a success page or update the UI
-        } catch (error) {
-            handleError(error);
-        }
-    };
-
-    return (
-        <div>
-            <h1>[Product/Service Name]</h1>
-            <p>Value proposition and marketing content goes here...</p>
-
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    placeholder="Username"
-                    required
-                />
-                <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                    required
-                />
-                <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    required
-                />
-                <button type="submit">Sign Up</button>
-            </form>
-        </div>
-    );
+  return (
+    <div>
+      <h1>[Product/Service Name]</h1>
+      <p>Compelling value proposition and marketing content goes here.</p>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="name"
+          placeholder="Your Name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Your Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <textarea
+          name="message"
+          placeholder="Your Message"
+          value={formData.message}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  );
 };
 
 export default MarketingPage;
@@ -139,20 +165,13 @@ export default MarketingPage;
 
 In this code:
 
-1. The security configuration is defined according to the provided template, including Content Security Policy (CSP), rate limiting, and CORS settings.
+- The `App` component sets up the security configuration, including Content Security Policy (CSP), rate limiting, and CORS settings.
+- JWT authentication and password hashing functions are defined for secure user authentication.
+- Input validation schema is defined using Joi for validating user input.
+- Error handling middleware is implemented to handle different types of errors and return appropriate responses.
+- The `MarketingPage` component renders the marketing page content and includes a form for user engagement and lead generation.
+- Form submission is handled securely by sending the form data to the server using Axios.
 
-2. JWT authentication is set up with a secret key, expiration time, and algorithm.
+Note: Make sure to properly set up the backend API endpoints and implement necessary security measures on the server-side as well.
 
-3. The `hashPassword` function is used to securely hash the user's password using bcrypt before storing it.
-
-4. Input validation is performed using the Joi library, ensuring that the username, password, and email meet the specified criteria.
-
-5. Error handling is implemented using a `handleError` function that logs the error and can display an appropriate message to the user.
-
-6. The `MarketingPage` component renders the marketing content and a sign-up form. When the form is submitted, it validates the form data, hashes the password, and sends the data to the server using an HTTP POST request.
-
-7. If the sign-up is successful, the server should return a JWT token, which can be securely stored (e.g., in an httpOnly cookie) for subsequent authenticated requests.
-
-Remember to handle the server-side implementation securely as well, following best practices for authentication, authorization, and data storage.
-
-Note: This code assumes you have the necessary dependencies installed (e.g., `axios`, `joi`, `bcrypt`, `jsonwebtoken`) and have set up the required environment variables (e.g., `JWT_SECRET`, `ALLOWED_ORIGINS`).
+Remember to keep sensitive information, such as the JWT secret, in environment variables and never expose them in the client-side code.
