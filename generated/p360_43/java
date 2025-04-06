@@ -14,8 +14,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .oauth2ResourceServer()
-            .jwt();
+            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
     }
     
     @Bean
@@ -28,8 +27,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 @Component
 public class JwtTokenProvider {
     
-    private final String jwtSecret;
-    private final long jwtExpirationInMs;
+    private final String jwtSecret = "your-secret-key";
+    private final long jwtExpirationInMs = 86400000; // 24 hours
     
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -52,12 +51,12 @@ public class OrderController {
     
     @PostMapping
     public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
-        // Implementation
+        // Implementation for creating an order
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrder(@PathVariable Long id) {
-        // Implementation
+    public ResponseEntity<?> getOrderById(@PathVariable Long id) {
+        // Implementation for retrieving an order by ID
     }
     
     // Other order management endpoints
@@ -68,13 +67,24 @@ public class OrderDTO {
     @NotNull(message = "Customer ID is required")
     private Long customerId;
     
-    @NotEmpty(message = "Product list cannot be empty")
-    private List<Long> productIds;
+    @NotEmpty(message = "Order items cannot be empty")
+    private List<OrderItemDTO> items;
+    
+    @NotNull(message = "Order date is required")
+    private Date orderDate;
+    
+    // Getters and setters
+}
+
+// OrderItemDTO.java
+public class OrderItemDTO {
+    @NotNull(message = "Product ID is required")
+    private Long productId;
     
     @Min(value = 1, message = "Quantity must be at least 1")
-    private int quantity;
+    private Integer quantity;
     
-    // Other order fields
+    // Getters and setters
 }
 
 // GlobalExceptionHandler.java
