@@ -1,48 +1,103 @@
-import java.security.SecureRandom;
-
-public class PasswordGenerator {
-  
-  public static void main(String[] args) {  
-    String password = generatePassword(12);
-    System.out.println("Generated Password: " + password);
-  }
-
-  public static String generatePassword(int length) {
-    // Validate input
-    if (length < 8) {
-      throw new IllegalArgumentException("Password length must be at least 8 characters");
+// SecurityConfig.java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/public/**").permitAll()
+            .antMatchers("/api/orders/**").authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .oauth2ResourceServer()
+            .jwt();
     }
     
-    // Define character sets to choose from  
-    String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    String lowerCase = "abcdefghijklmnopqrstuvwxyz";
-    String numbers = "0123456789";
-    String specialChars = "!@#$%^&*()_+-=[];,./{}:<>?";
-    
-    // Combine character sets into one string
-    String allChars = upperCase + lowerCase + numbers + specialChars;
-    
-    // Use SecureRandom to generate password
-    SecureRandom random = new SecureRandom();
-    StringBuilder password = new StringBuilder();
-    
-    // Ensure password has at least one of each required char type
-    password.append(getRandomChar(upperCase, random)); 
-    password.append(getRandomChar(lowerCase, random));
-    password.append(getRandomChar(numbers, random)); 
-    password.append(getRandomChar(specialChars, random));
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
 
-    // Generate remaining characters
-    for (int i = 4; i < length; i++) {
-      password.append(getRandomChar(allChars, random));  
+// JwtTokenProvider.java
+@Component
+public class JwtTokenProvider {
+    
+    private final String jwtSecret;
+    private final long jwtExpirationInMs;
+    
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", userDetails.getAuthorities());
+        
+        return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
+            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+            .compact();
+    }
+}
+
+// OrderController.java
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+    
+    @PostMapping
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        // Implementation
     }
     
-    return password.toString();
-  }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable Long id) {
+        // Implementation
+    }
+    
+    // Other order management endpoints
+}
 
-  private static char getRandomChar(String charSet, SecureRandom random) {
-    int randomIndex = random.nextInt(charSet.length());
-    return charSet.charAt(randomIndex);
-  }
+// OrderDTO.java
+public class OrderDTO {
+    @NotNull(message = "Customer ID is required")
+    private Long customerId;
+    
+    @NotEmpty(message = "Product list cannot be empty")
+    private List<Long> productIds;
+    
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private int quantity;
+    
+    // Other order fields
+}
 
+// GlobalExceptionHandler.java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Validation Error",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Authentication Error",
+            ex.getMessage(),
+            HttpStatus.UNAUTHORIZED
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
 }
