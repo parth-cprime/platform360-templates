@@ -1,158 +1,136 @@
-Here's the secure React code based on the provided task details, requirements, and security template:
+Based on the provided task details, requirements, and security template, here's a secure implementation of the order management API in React:
 
 ```jsx
-// App.js
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import rateLimit from 'express-rate-limit';
-import cors from 'cors';
+// OrderAPI.js
+import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Joi from 'joi';
-import OrderManagementAPI from './components/OrderManagementAPI';
-import AuthenticatedRoute from './components/AuthenticatedRoute';
+import { ValidationError, AuthenticationError } from './errors';
+import logger from './logger';
 
+// Security configuration
 const securityConfig = {
-  helmet: {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"]
-      }
+    helmet: {
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:", "https:"],
+                connectSrc: ["'self'"]
+            }
+        }
+    },
+    rateLimit: {
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100 // limit each IP to 100 requests per windowMs
+    },
+    cors: {
+        origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true
     }
-  },
-  rateLimit: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
-  },
-  cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-  }
 };
 
+// JWT authentication configuration
 const jwtConfig = {
-  secret: process.env.JWT_SECRET,
-  expiresIn: '1h',
-  algorithm: 'HS256'
+    secret: process.env.JWT_SECRET,
+    expiresIn: '1h',
+    algorithm: 'HS256'
 };
 
+// Password hashing
 const hashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
 };
 
-const userSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
-  email: Joi.string().email().required()
+// Input validation schema
+const orderSchema = Joi.object({
+    customerName: Joi.string().required(),
+    orderItems: Joi.array().items(
+        Joi.object({
+            productId: Joi.string().required(),
+            quantity: Joi.number().integer().min(1).required()
+        })
+    ).required(),
+    shippingAddress: Joi.string().required()
 });
 
+// Error handling middleware
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
-  
-  if (err instanceof ValidationError) {
-    return res.status(400).json({
-      error: 'Validation Error',
-      details: err.details
-    });
-  }
-  
-  if (err instanceof AuthenticationError) {
-    return res.status(401).json({
-      error: 'Authentication Error',
-      message: err.message
-    });
-  }
-  
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'An unexpected error occurred'
-  });
-};
-
-const App = () => {
-  return (
-    <Router>
-      <Helmet {...securityConfig.helmet} />
-      <Switch>
-        <AuthenticatedRoute path="/orders" component={OrderManagementAPI} />
-        {/* Other routes */}
-      </Switch>
-    </Router>
-  );
-};
-
-export default App;
-
-// AuthenticatedRoute.js
-import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
-import jwt from 'jsonwebtoken';
-
-const AuthenticatedRoute = ({ component: Component, ...rest }) => (
-  <Route
-    {...rest}
-    render={(props) =>
-      localStorage.getItem('token') ? (
-        <Component {...props} />
-      ) : (
-        <Redirect
-          to={{
-            pathname: '/login',
-            state: { from: props.location }
-          }}
-        />
-      )
+    logger.error(err.stack);
+    
+    if (err instanceof ValidationError) {
+        return res.status(400).json({
+            error: 'Validation Error',
+            details: err.details
+        });
     }
-  />
-);
+    
+    if (err instanceof AuthenticationError) {
+        return res.status(401).json({
+            error: 'Authentication Error',
+            message: err.message
+        });
+    }
+    
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred'
+    });
+};
 
-export default AuthenticatedRoute;
-
-// OrderManagementAPI.js
-import React from 'react';
-import axios from 'axios';
-
-const OrderManagementAPI = () => {
-  const fetchOrders = async () => {
-    try {
-      const response = await axios.get('/api/orders', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+// Order API
+const OrderAPI = {
+    async createOrder(orderData, token) {
+        try {
+            // Validate input data
+            const { error } = orderSchema.validate(orderData);
+            if (error) {
+                throw new ValidationError(error.details);
+            }
+            
+            // Verify JWT token
+            const decodedToken = jwt.verify(token, jwtConfig.secret);
+            
+            // Create order
+            const response = await axios.post('/api/orders', orderData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            return response.data;
+        } catch (error) {
+            if (error instanceof jwt.JsonWebTokenError) {
+                throw new AuthenticationError('Invalid token');
+            }
+            throw error;
         }
-      });
-      // Handle the response data
-    } catch (error) {
-      // Handle the error
-    }
-  };
-
-  return (
-    <div>
-      {/* Render the order management UI */}
-    </div>
-  );
+    },
+    
+    // Other order-related methods...
 };
 
-export default OrderManagementAPI;
+export default OrderAPI;
 ```
 
-In this code:
+In this implementation:
 
-- The `securityConfig` object is defined to configure the security middleware, including Helmet for setting security headers, rate limiting, and CORS configuration.
-- The `jwtConfig` object is defined to configure the JWT settings, including the secret key, expiration time, and algorithm.
-- The `hashPassword` function is used to securely hash passwords using bcrypt.
-- The `userSchema` is defined using Joi to validate user input for username, password, and email.
-- The `errorHandler` middleware is implemented to handle different types of errors, including validation errors and authentication errors.
-- The `AuthenticatedRoute` component is created to protect routes that require authentication. It checks for the presence of a token in local storage and redirects to the login page if the token is not found.
-- The `OrderManagementAPI` component makes authenticated requests to the backend API using the token stored in local storage.
+1. The `securityConfig` object defines the security middleware configuration, including content security policy, rate limiting, and CORS settings.
 
-Remember to handle the login process securely, validate and sanitize user input, and properly handle errors and exceptions.
+2. The `jwtConfig` object defines the configuration for JWT authentication, including the secret key, expiration time, and algorithm.
 
-Note: This code assumes you have the necessary dependencies installed (e.g., `react-router-dom`, `react-helmet`, `express-rate-limit`, `cors`, `jsonwebtoken`, `bcrypt`, `joi`, `axios`) and have the backend API set up to handle authentication and order management.
+3. The `hashPassword` function is used to securely hash passwords using bcrypt.
+
+4. The `orderSchema` defines the input validation schema for the order data using Joi.
+
+5. The `errorHandler` middleware is responsible for handling and returning appropriate error responses.
+
+6. The `OrderAPI` object contains methods for creating an order. It validates the input data using the `orderSchema`, verifies the JWT token, and makes a POST request to the server to create the order.
+
+7. Error handling is implemented to catch and handle validation errors, authentication errors, and other unexpected errors.
+
+Remember to properly secure sensitive information like the JWT secret key and ensure that it is not exposed in the client-side code. Additionally, make sure to implement proper server-side validation and authentication mechanisms to further enhance security.
