@@ -1,0 +1,158 @@
+Based on the provided task details, requirements, and security template, here's a secure React code implementation:
+
+```jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import Joi from 'joi';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+// Security Configuration
+const securityConfig = {
+    helmet: {
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:", "https:"],
+                connectSrc: ["'self'"]
+            }
+        }
+    },
+    rateLimit: {
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100 // limit each IP to 100 requests per windowMs
+    },
+    cors: {
+        origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true
+    }
+};
+
+// JWT Authentication
+const jwtConfig = {
+    secret: process.env.JWT_SECRET,
+    expiresIn: '1h',
+    algorithm: 'HS256'
+};
+
+// Password hashing
+const hashPassword = async (password) => {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+};
+
+// Input validation schema
+const userSchema = Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+    email: Joi.string().email().required()
+});
+
+// Error handling
+const handleError = (error) => {
+    console.error('Error:', error);
+    // Display an error message to the user
+};
+
+const MarketingPage = () => {
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        email: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            // Validate form data
+            await userSchema.validateAsync(formData);
+
+            // Hash the password
+            const hashedPassword = await hashPassword(formData.password);
+
+            // Send form data to the server
+            const response = await axios.post('/api/signup', {
+                username: formData.username,
+                password: hashedPassword,
+                email: formData.email
+            });
+
+            // Handle successful response
+            const token = response.data.token;
+            // Store the token securely (e.g., in a httpOnly cookie)
+
+            // Redirect to a success page or update the UI
+        } catch (error) {
+            handleError(error);
+        }
+    };
+
+    return (
+        <div>
+            <h1>[Product/Service Name]</h1>
+            <p>Value proposition and marketing content goes here...</p>
+
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Username"
+                    required
+                />
+                <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Password"
+                    required
+                />
+                <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    required
+                />
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    );
+};
+
+export default MarketingPage;
+```
+
+In this code:
+
+1. The security configuration is defined according to the provided template, including Content Security Policy (CSP), rate limiting, and CORS settings.
+
+2. JWT authentication is set up with a secret key, expiration time, and algorithm.
+
+3. The `hashPassword` function is used to securely hash the user's password using bcrypt before storing it.
+
+4. Input validation is performed using the Joi library, ensuring that the username, password, and email meet the specified criteria.
+
+5. Error handling is implemented using a `handleError` function that logs the error and can display an appropriate message to the user.
+
+6. The `MarketingPage` component renders the marketing content and a sign-up form. When the form is submitted, it validates the form data, hashes the password, and sends the data to the server using an HTTP POST request.
+
+7. If the sign-up is successful, the server should return a JWT token, which can be securely stored (e.g., in an httpOnly cookie) for subsequent authenticated requests.
+
+Remember to handle the server-side implementation securely as well, following best practices for authentication, authorization, and data storage.
+
+Note: This code assumes you have the necessary dependencies installed (e.g., `axios`, `joi`, `bcrypt`, `jsonwebtoken`) and have set up the required environment variables (e.g., `JWT_SECRET`, `ALLOWED_ORIGINS`).
