@@ -1,4 +1,4 @@
-Here's the secure code implementation based on the provided task details, requirements, and security template:
+Based on the provided task details, requirements, and security template, here's the secure code for the order management API:
 
 ```java
 // SecurityConfig.java
@@ -17,8 +17,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .oauth2ResourceServer()
-            .jwt();
+            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
     }
     
     @Bean
@@ -31,8 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 @Component
 public class JwtTokenProvider {
     
-    private final String jwtSecret;
-    private final long jwtExpirationInMs;
+    private final String jwtSecret = "your-secret-key";
+    private final long jwtExpirationInMs = 86400000; // 24 hours
     
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -55,12 +54,12 @@ public class OrderController {
     
     @PostMapping
     public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
-        // Implementation
+        // Implementation for creating an order
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrder(@PathVariable Long id) {
-        // Implementation
+    public ResponseEntity<?> getOrderById(@PathVariable Long id) {
+        // Implementation for retrieving an order by ID
     }
     
     // Other order management endpoints
@@ -71,13 +70,24 @@ public class OrderDTO {
     @NotNull(message = "Customer ID is required")
     private Long customerId;
     
-    @NotEmpty(message = "Product list cannot be empty")
-    private List<Long> productIds;
+    @NotEmpty(message = "Order items cannot be empty")
+    private List<OrderItemDTO> items;
+    
+    @NotNull(message = "Order date is required")
+    private Date orderDate;
+    
+    // Getters and setters
+}
+
+// OrderItemDTO.java
+public class OrderItemDTO {
+    @NotNull(message = "Product ID is required")
+    private Long productId;
     
     @Min(value = 1, message = "Quantity must be at least 1")
-    private int quantity;
+    private Integer quantity;
     
-    // Other order fields
+    // Getters and setters
 }
 
 // GlobalExceptionHandler.java
@@ -106,18 +116,16 @@ public class GlobalExceptionHandler {
 }
 ```
 
-In this implementation:
+This code incorporates the following security measures:
 
-1. The `SecurityConfig` class configures the security settings for the API. It enables OAuth2 authentication using JWT tokens and restricts access to the `/api/orders` endpoints to authenticated users only.
+1. The `SecurityConfig` class configures the security settings, enabling JWT authentication and allowing public access to `/api/public/**` endpoints while requiring authentication for `/api/orders/**` endpoints.
 
-2. The `JwtTokenProvider` class generates JWT tokens based on user details and sets the token expiration time.
+2. The `JwtTokenProvider` class handles the generation of JWT tokens using a secret key and an expiration time of 24 hours.
 
-3. The `OrderController` class defines the endpoints for order management. It includes annotations for input validation using the `@Valid` annotation.
+3. The `OrderController` class defines the endpoints for order management operations, such as creating an order and retrieving an order by ID. The endpoints use `@Valid` annotation to validate the input data.
 
-4. The `OrderDTO` class represents the data transfer object for an order. It includes validation annotations to ensure the required fields are present and meet certain criteria.
+4. The `OrderDTO` and `OrderItemDTO` classes represent the data transfer objects for orders and order items, respectively. They include validation annotations to ensure data integrity.
 
-5. The `GlobalExceptionHandler` class provides centralized exception handling for validation and authentication errors. It returns appropriate error responses with relevant status codes.
+5. The `GlobalExceptionHandler` class handles exceptions related to validation and authentication, providing appropriate error responses.
 
-Note: Make sure to properly configure the OAuth2 authentication provider, such as by integrating with an identity provider or implementing your own authentication server.
-
-This code follows the provided security template and incorporates secure practices such as input validation, authentication using OAuth2 with JWT tokens, and proper error handling. It ensures that only authenticated users can access the order management endpoints and validates the input data to prevent potential security vulnerabilities.
+Please note that this is a simplified example and additional security measures, such as input sanitization, secure communication (HTTPS), and proper authorization checks, should be implemented in a production environment.
