@@ -1,0 +1,27 @@
+import Joi from 'joi';
+
+const ValidationService = {
+  async validateFeedback(feedback) {
+    const schema = Joi.object({
+      name: Joi.string().required(),
+      email: Joi.string().email().required(),
+      message: Joi.string().required(),
+    });
+
+    try {
+      await schema.validateAsync(feedback);
+    } catch (error) {
+      console.error('Validation error:', error);
+      throw error;
+    }
+  },
+};
+
+export default ValidationService;
+
+Description:
+This file contains the `ValidationService`, which is responsible for validating user inputs, specifically the feedback form data. It uses the `joi` library to define a validation schema for the feedback object, specifying that the `name`, `email`, and `message` fields are required. The `validateFeedback` method validates the feedback data against the schema and throws an error if the validation fails.
+
+These are the key files and components of the Customer Feedback Notification System. The project follows React best practices, implements security measures, and provides a basic structure for handling customer feedback and sending notifications. The code is organized into logical components and services, making it modular and maintainable.
+
+Please note that this is a simplified version and may require additional enhancements and modifications based on the specific requirements of your project.
