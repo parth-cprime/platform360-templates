@@ -1,0 +1,18 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import OrderPage from './pages/OrderPage';
+import PrivateRoute from './components/PrivateRoute';
+
+const App = () => {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/login" component={LoginPage} />
+        <PrivateRoute path="/" component={OrderPage} />
+      </Switch>
+    </Router>
+  );
+};
+
+export default App;
