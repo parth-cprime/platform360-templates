@@ -1,0 +1,23 @@
+import React, { useEffect, useState } from 'react';
+import orderService from '../services/orderService';
+
+export default function Orders() {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    orderService.getAll()
+      .then(response => setOrders(response.data))
+      .catch(error => console.error(error));  
+  }, []);
+
+  // Render list of orders
+
+  return (
+    <>
+      <h1>Orders</h1>
+      {/* Render orders */}
+    </>
+  );
+}
+
+----
