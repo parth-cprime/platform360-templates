@@ -1,188 +1,219 @@
-Here is the generated code based on the provided task details, requirements, and templates:
+Here is a sample secure react project based on the provided requirements and templates:
 
 ```
-1. README.md:
+README.md
 
-# Customer Feedback Notification System
+# Order Management API
 
-## Project Overview
-This project implements a notification system that alerts the appropriate customer service team member when urgent customer feedback is submitted through the web form. The system is built using React and follows security best practices to ensure the protection of sensitive customer data.
+This project implements an Order Management API in react, following security best practices and a modular project structure.
+
+## Overview
+
+The Order Management API allows managing orders and includes features for user authentication and authorization using JWT tokens. It follows react coding standards, implements security measures, and includes unit and integration tests.
 
 ## Folder Structure
-- `src/`: Contains the main source code files
-  - `components/`: React components
-  - `services/`: Service layer for business logic and external integrations  
-  - `utils/`: Utility functions and helpers
-  - `App.js`: Main application component
-  - `index.js`: Entry point of the application
-- `public/`: Contains public assets and `index.html` file
-- `config/`: Configuration files
-- `tests/`: Contains test files
-  - `unit/`: Unit tests
-  - `integration/`: Integration tests
-- `.env`: Environment variables file
-- `package.json`: Project dependencies and scripts
+
+- src/
+  - controllers/
+    - orderController.js
+  - models/ 
+    - orderModel.js
+    - userModel.js
+  - routes/
+    - orderRoutes.js 
+    - authRoutes.js
+  - services/
+    - orderService.js
+    - authService.js
+  - middleware/
+    - authMiddleware.js
+    - errorMiddleware.js
+  - config/
+    - db.js
+    - security.js
+  - tests/
+    - unit/
+    - integration/
+  - app.js
+- package.json
+- .env
 
 ## Key Components
-- `FeedbackForm`: React component for the customer feedback form
-- `NotificationService`: Service responsible for sending notifications to customer service team members
-- `AuthService`: Service handling authentication and authorization using JWT
-- `ValidationService`: Service for validating user inputs and handling validation errors
 
-## Setup Instructions
-1. Clone the repository
-2. Install dependencies using `npm install`
-3. Create a `.env` file based on the provided `.env.example` and configure the required environment variables
-4. Run the application using `npm start`
-5. Access the application at `http://localhost:3000`
+- Controllers: Handle API requests and responses
+- Models: Define data schemas 
+- Routes: Define API endpoints
+- Services: Contain business logic
+- Middleware: Implement cross-cutting concerns like authentication and error handling
+- Config: Configuration for the database and security
+- Tests: Unit and integration tests
+
+## Setup
+
+1. Install dependencies: `npm install`
+2. Set environment variables in `.env` for things like the database connection string, JWT secret key, etc.
+3. Run the app: `npm start`
+4. Run tests: `npm test`
 
 ## Security Considerations
-- The application follows the React security best practices and implements security measures such as:
-  - Content Security Policy (CSP) headers to prevent cross-site scripting (XSS) attacks
-  - Rate limiting to protect against brute-force attacks
-  - CORS configuration to restrict cross-origin requests
-  - JWT-based authentication and authorization
-  - Password hashing using bcrypt
-  - Input validation using Joi to prevent injection attacks
-- Sensitive data such as API keys and secrets are stored in environment variables and not committed to version control
-- Regular security audits and updates are performed to ensure the application remains secure
 
-2. File: `src/components/FeedbackForm.js`
+- Uses JWT for authentication 
+- Password hashing with bcrypt
+- Protects against common attacks with helmet
+- Implements rate limiting
+- Validates and sanitizes user input
+- Handles errors securely without leaking sensitive data
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import NotificationService from '../services/NotificationService';
-import ValidationService from '../services/ValidationService';
+```
 
-const FeedbackForm = () => {
-  const { register, handleSubmit, errors } = useForm();
-  const [submitting, setSubmitting] = useState(false);
+File 1:
+```
+Path: src/controllers/orderController.js
+Brief: Handles requests to the order endpoints.
 
-  const onSubmit = async (data) => {
-    setSubmitting(true);
-    try {
-      await ValidationService.validateFeedback(data);
-      await NotificationService.sendNotification(data);
-      alert('Feedback submitted successfully');
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('An error occurred while submitting feedback');
-    }
-    setSubmitting(false);
-  };
+const Order = require('../models/orderModel');
+const orderService = require('../services/orderService');
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label>Name</label>
-        <input name="name" ref={register({ required: true })} />
-        {errors.name && <span>This field is required</span>}
-      </div>
-      <div>
-        <label>Email</label>
-        <input name="email" ref={register({ required: true, pattern: /^\S+@\S+$/i })} />
-        {errors.email && <span>Please enter a valid email address</span>}
-      </div>
-      <div>
-        <label>Message</label>
-        <textarea name="message" ref={register({ required: true })} />
-        {errors.message && <span>This field is required</span>}
-      </div>
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Submitting...' : 'Submit Feedback'}
-      </button>
-    </form>
-  );
+const createOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.createOrder(req.body);
+    res.status(201).json(order);
+  } catch (err) {
+    next(err);
+  }
 };
 
-export default FeedbackForm;
-
-Description: 
-This file contains the `FeedbackForm` component, which represents the customer feedback form. It uses the `react-hook-form` library for form handling and validation. The form includes fields for name, email, and message. Upon submission, it validates the form data using the `ValidationService` and sends a notification using the `NotificationService`. It handles loading state and displays appropriate success/error messages.
-
-File: `src/services/NotificationService.js`
-
-import axios from 'axios';
-
-const NotificationService = {
-  async sendNotification(feedback) {
-    try {
-      await axios.post('/api/notifications', feedback);
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      throw error;
+const getOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderById(req.params.id);
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+    } else {
+      res.json(order);
     }
-  },
+  } catch (err) {
+    next(err);
+  }
 };
 
-export default NotificationService;
+module.exports = {
+  createOrder,
+  getOrder
+};
+```
 
-Description:
-This file contains the `NotificationService`, which is responsible for sending notifications to the appropriate customer service team member when urgent feedback is submitted. It uses the `axios` library to make a POST request to the `/api/notifications` endpoint with the feedback data.
+File 2: 
+```
+Path: src/models/orderModel.js  
+Brief: Defines the schema for an order.
 
-File: `src/services/AuthService.js`
+const mongoose = require('mongoose');
 
-import axios from 'axios';
-import jwtDecode from 'jwt-decode';
-
-const AuthService = {
-  async login(credentials) {
-    try {
-      const response = await axios.post('/api/login', credentials);
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-    } catch (error) {
-      console.error('Error logging in:', error);
-      throw error;
+const orderSchema = new mongoose.Schema({
+  user: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  items: [{
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true  
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
     }
+  }],
+  total: {
+    type: Number,
+    required: true 
   },
+  status: {
+    type: String,
+    enum: ['pending', 'processed', 'shipped', 'delivered'],
+    default: 'pending'
+  }
+}, { 
+  timestamps: true
+});
 
-  logout() {
-    localStorage.removeItem('token');
-  },
+module.exports = mongoose.model('Order', orderSchema);
+```
 
-  isAuthenticated() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return false;
-    }
-    const decodedToken = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    return decodedToken.exp > currentTime;
-  },
+File 3:
+```
+Path: src/routes/orderRoutes.js
+Brief: Defines the routes for order related endpoints.
+
+const express = require('express');
+const router = express.Router();
+const orderController = require('../controllers/orderController');
+const authMiddleware = require('../middleware/authMiddleware');
+
+router.post('/', authMiddleware, orderController.createOrder);
+router.get('/:id', authMiddleware, orderController.getOrder);  
+
+module.exports = router;
+```
+
+File 4:
+```
+Path: src/services/orderService.js
+Brief: Contains the business logic for orders.
+
+const Order = require('../models/orderModel');
+
+const createOrder = async (orderData) => {
+  const order = new Order(orderData);
+  await order.save();
+  return order;
 };
 
-export default AuthService;
-
-Description:
-This file contains the `AuthService`, which handles authentication and authorization using JWT (JSON Web Tokens). It provides methods for logging in, logging out, and checking if the user is authenticated. The `login` method sends the user credentials to the `/api/login` endpoint and stores the received token in the browser's local storage. The `isAuthenticated` method checks if a valid token exists in the local storage.
-
-File: `src/services/ValidationService.js`
-
-import Joi from 'joi';
-
-const ValidationService = {
-  async validateFeedback(feedback) {
-    const schema = Joi.object({
-      name: Joi.string().required(),
-      email: Joi.string().email().required(),
-      message: Joi.string().required(),
-    });
-
-    try {
-      await schema.validateAsync(feedback);
-    } catch (error) {
-      console.error('Validation error:', error);
-      throw error;
-    }
-  },
+const getOrderById = async (id) => {
+  const order = await Order.findById(id).populate('user', 'name email').populate('items.product', 'name price');
+  return order;
 };
 
-export default ValidationService;
+module.exports = {
+  createOrder,
+  getOrderById
+};
+```
 
-Description:
-This file contains the `ValidationService`, which is responsible for validating user inputs, specifically the feedback form data. It uses the `joi` library to define a validation schema for the feedback object, specifying that the `name`, `email`, and `message` fields are required. The `validateFeedback` method validates the feedback data against the schema and throws an error if the validation fails.
+There would be additional similar files for auth related components following the same structure and principles.
 
-These are the key files and components of the Customer Feedback Notification System. The project follows React best practices, implements security measures, and provides a basic structure for handling customer feedback and sending notifications. The code is organized into logical components and services, making it modular and maintainable.
+The app.js file would bring everything together:
 
-Please note that this is a simplified version and may require additional enhancements and modifications based on the specific requirements of your project.
+```js
+// app.js
+const express = require('express');
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const config = require('./config/security');
+const orderRoutes = require('./routes/orderRoutes');
+const authRoutes = require('./routes/authRoutes');
+const errorMiddleware = require('./middleware/errorMiddleware');
+
+const app = express();
+
+mongoose.connect(process.env.MONGO_URI);
+
+app.use(express.json());
+app.use(helmet());
+app.use(rateLimit(config.rateLimit));
+
+app.use('/api/orders', orderRoutes);
+app.use('/api/auth', authRoutes);
+
+app.use(errorMiddleware);
+
+module.exports = app;
+```
+
+This provides a high-level skeleton of what a secure, well-structured react Order Management API might look like based on the provided requirements. The actual implementation would include more detailed functionality, along with auth components, validation logic, unit and integration tests, and more extensive error handling. But this illustrates the general project organization and key security considerations.
+
+Let me know if you have any other questions!
