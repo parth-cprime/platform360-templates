@@ -4,60 +4,67 @@ import axios from 'axios';
 const SampleComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Make a secure API call with basic authentication
-      const response = await axios.get('https://api.example.com/data', {
-        auth: {
-          username,
-          password,
-        },
-      });
+      // Make a secure API call using basic authentication
+      const response = await axios.post(
+        '/api/sample',
+        { message },
+        {
+          auth: {
+            username,
+            password,
+          },
+        }
+      );
 
-      setData(response.data);
-      setError(null);
+      // Handle the response
+      console.log(response.data);
+      // Clear the form
+      setMessage('');
     } catch (error) {
-      setData(null);
-      setError('Authentication failed. Please check your credentials.');
+      console.error('Error:', error);
+      // Handle the error
     }
   };
 
   return (
     <div>
-      <h2>Sample Component</h2>
+      <h1>Sample Component</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username:</label>
+        <label>
+          Username:
           <input
             type="text"
-            id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
           />
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
+        </label>
+        <label>
+          Password:
           <input
             type="password"
-            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
-        </div>
+        </label>
+        <label>
+          Message:
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            required
+          />
+        </label>
         <button type="submit">Submit</button>
       </form>
-      {error && <p>{error}</p>}
-      {data && (
-        <div>
-          <h3>Data:</h3>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-      )}
     </div>
   );
 };
