@@ -1,81 +1,87 @@
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import LeadForm from './components/LeadForm';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+
+function App() {
+  return (
+    <Router>
+      <div className="app">
+        <Header />
+        <Switch>
+          <Route exact path="/" component={HomePage} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms-of-service" component={TermsOfService} />
+        </Switch>
+        <LeadForm />
+        <Footer />
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+// HomePage.js
+import React from 'react';
+import HeroSection from '../components/HeroSection';
+import FeaturesSection from '../components/FeaturesSection';
+import TestimonialsSection from '../components/TestimonialsSection';
+
+function HomePage() {
+  return (
+    <div className="home-page">
+      <HeroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+    </div>
+  );
+}
+
+export default HomePage;
+
+// LeadForm.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const MarketingPage = () => {
+function LeadForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const response = await axios.post('/api/leads', { name, email });
-      console.log('Lead submitted successfully:', response.data);
-      // Clear form fields
-      setName('');
-      setEmail('');
+      // Handle success response
     } catch (error) {
-      console.error('Error submitting lead:', error);
+      // Handle error
     }
   };
 
   return (
-    <div className="marketing-page">
-      <header>
-        <h1>[Product/Service Name]</h1>
-        <nav>
-          {/* Add navigation menu items */}
-        </nav>
-      </header>
-
-      <main>
-        <section className="hero">
-          <h2>Compelling Headline</h2>
-          <p>Brief description highlighting the value proposition.</p>
-          <button>Call to Action</button>
-        </section>
-
-        <section className="features">
-          <h3>Key Features</h3>
-          {/* Add feature highlights */}
-        </section>
-
-        <section className="testimonials">
-          <h3>Testimonials</h3>
-          {/* Add customer testimonials */}
-        </section>
-
-        <section className="lead-capture">
-          <h3>Get Started</h3>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="name">Name:</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <button type="submit">Submit</button>
-          </form>
-        </section>
-      </main>
-
-      <footer>
-        {/* Add footer content */}
-      </footer>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <button type="submit">Submit</button>
+    </form>
   );
-};
+}
 
-export default MarketingPage;
+export default LeadForm;
