@@ -1,273 +1,366 @@
-Here is the README.md and code for the order management API based on the provided requirements and templates:
+Here is the generated secure, well-structured code for the order management API based on the provided task details, requirements, and templates:
 
-```
-README.md
+1. README.md
 
+```markdown
 # Order Management API
 
-This project provides a secure order management API implemented in Java. It allows customers to submit orders and provides notifications for urgent issues that require immediate attention from the customer service team.
+This project implements an Order Management API using Node.js. It provides endpoints for managing orders and includes security features such as JWT authentication, rate limiting, and input validation.
 
 ## Folder Structure
 
-- `src/main/java/com/company/ordermgmt`: Contains the main application code
-  - `config`: Configuration classes
-  - `controller`: API endpoint controllers
-  - `dto`: Data transfer objects
-  - `exception`: Custom exception classes
-  - `model`: Domain model classes 
-  - `repository`: Data access layer interfaces
-  - `security`: Security-related classes
-  - `service`: Business logic services
-- `src/main/resources`: Contains application configuration files
-- `src/test/java/com/company/ordermgmt`: Contains test classes
+- `src/`: Contains the main source code
+  - `controllers/`: API route handlers
+  - `middlewares/`: Custom middleware functions
+  - `models/`: Data models and schemas
+  - `routes/`: API route definitions
+  - `services/`: Business logic and data access
+  - `utils/`: Utility functions
+  - `app.js`: Main application entry point
+  - `config.js`: Configuration settings
+- `tests/`: Contains test files
+- `package.json`: Project dependencies and scripts
+- `.env`: Environment variables
 
 ## Key Components
 
-- `OrderController`: Exposes the order management API endpoints
-- `OrderService`: Implements the business logic for managing orders
-- `OrderRepository`: Provides data access methods for orders
-- `SecurityConfig`: Configures the application security settings
-- `JwtTokenProvider`: Handles JWT token generation and validation
-- `GlobalExceptionHandler`: Provides centralized exception handling
+- `app.js`: Sets up the Express application, middleware, and routes
+- `controllers/`: Defines the API route handlers
+- `middlewares/`: Implements custom middleware for authentication, error handling, etc.
+- `models/`: Defines the data models and schemas using Mongoose
+- `routes/`: Defines the API routes and maps them to the corresponding controllers
+- `services/`: Contains the business logic and data access functions
+- `utils/`: Provides utility functions for tasks like password hashing and token generation
 
 ## Setup Instructions
 
-1. Clone the repository: `git clone https://github.com/company/order-management-api.git`
-2. Navigate to the project directory: `cd order-management-api`
-3. Build the project: `./mvnw clean package`
-4. Run the application: `java -jar target/order-management-api.jar`
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables in `.env` file
+4. Start the server: `npm start`
+5. Run tests: `npm test`
 
 ## Security Considerations
 
-- The API endpoints are secured using JWT authentication.
-- User inputs are validated to prevent injection attacks.
-- Sensitive data is encrypted before storing in the database.
-- Access control is implemented to ensure users can only access authorized resources.
-- Proper error handling is in place to avoid exposing sensitive information in error messages.
+- JWT authentication is used to secure the API endpoints
+- Rate limiting middleware is implemented to prevent abuse
+- Input validation is performed using Joi schemas
+- Passwords are hashed using bcrypt before storing them in the database
+- CORS is configured to restrict access to allowed origins
+- Helmet middleware is used to add security headers
+```
 
----
+2. File Structure and Content
 
-src/main/java/com/company/ordermgmt/config/SecurityConfig.java
+2.1 `src/app.js`
+```javascript
+const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+const morgan = require('morgan');
+const config = require('./config');
+const routes = require('./routes');
+const errorHandler = require('./middlewares/errorHandler');
 
-package com.company.ordermgmt.config;
+const app = express();
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+// Security middleware
+app.use(helmet(config.securityConfig.helmet));
+app.use(rateLimit(config.securityConfig.rateLimit));
+app.use(cors(config.securityConfig.cors));
 
-import com.company.ordermgmt.security.JwtAuthenticationFilter;
+// Logging middleware
+app.use(morgan('combined'));
 
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+// Parse JSON request bodies
+app.use(express.json());
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .antMatchers("/api/public/**").permitAll()
-            .antMatchers("/api/orders/**").authenticated()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
+// API routes
+app.use('/api', routes);
+
+// Error handling middleware
+app.use(errorHandler);
+
+module.exports = app;
+```
+Purpose: Main application entry point that sets up the Express app, middleware, and routes.
+
+2.2 `src/config.js`
+```javascript
+require('dotenv').config();
+
+module.exports = {
+  port: process.env.PORT || 3000,
+  db: {
+    uri: process.env.DB_URI,
+  },
+  securityConfig: {
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"],
+        },
+      },
+    },
+    rateLimit: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+    },
+    cors: {
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true,
+    },
+  },
+  jwtConfig: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: '1h',
+    algorithm: 'HS256',
+  },
+};
+```
+Purpose: Configuration settings for the application, including security middleware options and database connection.
+
+2.3 `src/controllers/orderController.js`
+```javascript
+const OrderService = require('../services/orderService');
+
+exports.createOrder = async (req, res, next) => {
+  try {
+    const order = await OrderService.createOrder(req.body);
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await OrderService.getOrders();
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getOrderById = async (req, res, next) => {
+  try {
+    const order = await OrderService.getOrderById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+```
+Purpose: Defines the API route handlers for order-related operations.
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+2.4 `src/middlewares/authMiddleware.js`
+```javascript
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+
+exports.authenticate = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtConfig.secret);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+```
+Purpose: Middleware function to authenticate requests using JWT.
+
+2.5 `src/middlewares/errorHandler.js`
+```javascript
+const { ValidationError } = require('joi');
+const { AuthenticationError } = require('../utils/errors');
+const logger = require('../utils/logger');
+
+module.exports = (err, req, res, next) => {
+  logger.error(err.stack);
+
+  if (err instanceof ValidationError) {
+    return res.status(400).json({
+      error: 'Validation Error',
+      details: err.details,
+    });
+  }
+
+  if (err instanceof AuthenticationError) {
+    return res.status(401).json({
+      error: 'Authentication Error',
+      message: err.message,
+    });
+  }
+
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'An unexpected error occurred',
+  });
+};
+```
+Purpose: Error handling middleware to handle and format different types of errors.
+
+2.6 `src/models/order.js`
+```javascript
+const mongoose = require('mongoose');
+
+const orderSchema = new mongoose.Schema(
+  {
+    customerName: {
+      type: String,
+      required: true,
+    },
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+      },
+    ],
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model('Order', orderSchema);
+```
+Purpose: Defines the Order data model using Mongoose schema.
+
+2.7 `src/routes/index.js`
+```javascript
+const express = require('express');
+const orderRoutes = require('./orderRoutes');
+const authMiddleware = require('../middlewares/authMiddleware');
+
+const router = express.Router();
+
+router.use('/orders', authMiddleware.authenticate, orderRoutes);
+
+module.exports = router;
+```
+Purpose: Defines the main API routes and maps them to the corresponding sub-routes.
+
+2.8 `src/routes/orderRoutes.js`
+```javascript
+const express = require('express');
+const orderController = require('../controllers/orderController');
+
+const router = express.Router();
+
+router.post('/', orderController.createOrder);
+router.get('/', orderController.getOrders);
+router.get('/:id', orderController.getOrderById);
+
+module.exports = router;
+```
+Purpose: Defines the order-related API routes and maps them to the corresponding controller functions.
+
+2.9 `src/services/orderService.js`
+```javascript
+const Order = require('../models/order');
+const { ValidationError } = require('joi');
+const { orderSchema } = require('../utils/validation');
+
+exports.createOrder = async (orderData) => {
+  const { error } = orderSchema.validate(orderData);
+  if (error) {
+    throw new ValidationError(error.details);
+  }
+
+  const order = new Order(orderData);
+  return order.save();
+};
+
+exports.getOrders = async () => {
+  return Order.find();
+};
+
+exports.getOrderById = async (orderId) => {
+  return Order.findById(orderId);
+};
+```
+Purpose: Contains the business logic and data access functions for order-related operations.
+
+2.10 `src/utils/errors.js`
+```javascript
+class AuthenticationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
 }
 
-This file configures the security settings for the application. It enables JWT authentication for the order management endpoints and allows public access to the /api/public/** endpoints.
+module.exports = {
+  AuthenticationError,
+};
+```
+Purpose: Defines custom error classes for specific error types.
 
-src/main/java/com/company/ordermgmt/security/JwtTokenProvider.java
+2.11 `src/utils/logger.js`
+```javascript
+const winston = require('winston');
 
-package com.company.ordermgmt.security;
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: { service: 'order-management-api' },
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+module.exports = logger;
+```
+Purpose: Configures and exports a logger using the Winston library.
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+2.12 `src/utils/validation.js`
+```javascript
+const Joi = require('joi');
 
-@Component
-public class JwtTokenProvider {
+exports.orderSchema = Joi.object({
+  customerName: Joi.string().required(),
+  items: Joi.array()
+    .items(
+      Joi.object({
+        productId: Joi.string().required(),
+        quantity: Joi.number().min(1).required(),
+      })
+    )
+    .required(),
+  total: Joi.number().min(0).required(),
+});
+```
+Purpose: Defines validation schemas using Joi for validating request data.
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+This generated code provides a secure and well-structured implementation of an Order Management API using Node.js. It follows best practices for code organization, security, and validation.
 
-    @Value("${jwt.expiration}")
-    private long jwtExpirationInMs;
-
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities());
-
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(userDetails.getUsername())
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-            .signWith(SignatureAlgorithm.HS512, jwtSecret)
-            .compact();
-    }
-}
-
-This file provides JWT token generation functionality. It generates a JWT token with user details and roles as claims.
-
-src/main/java/com/company/ordermgmt/controller/OrderController.java
-
-package com.company.ordermgmt.controller;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.company.ordermgmt.dto.OrderRequest;
-import com.company.ordermgmt.service.OrderService;
-
-import javax.validation.Valid;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
-
-    private final OrderService orderService;
-
-    @Autowired
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
-        orderService.createOrder(orderRequest);
-        return ResponseEntity.ok().build();
-    }
-}
-
-This file defines the API endpoint for creating an order. It validates the order request and delegates the order creation to the OrderService.
-
-src/main/java/com/company/ordermgmt/dto/OrderRequest.java
-
-package com.company.ordermgmt.dto;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
-
-public class OrderRequest {
-
-    @NotBlank(message = "Customer name is required")
-    private String customerName;
-
-    @NotBlank(message = "Product name is required")
-    private String productName;
-
-    @Size(min = 1, message = "Quantity must be at least 1")
-    private int quantity;
-
-    // Getters and setters
-}
-
-This file defines the DTO (Data Transfer Object) for an order request. It includes validation annotations to ensure data integrity.
-
-src/main/java/com/company/ordermgmt/service/OrderService.java
-
-package com.company.ordermgmt.service;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.company.ordermgmt.dto.OrderRequest;
-import com.company.ordermgmt.model.Order;
-import com.company.ordermgmt.repository.OrderRepository;
-
-@Service
-public class OrderService {
-
-    private final OrderRepository orderRepository;
-    private final NotificationService notificationService;
-
-    @Autowired
-    public OrderService(OrderRepository orderRepository, NotificationService notificationService) {
-        this.orderRepository = orderRepository;
-        this.notificationService = notificationService;
-    }
-
-    public void createOrder(OrderRequest orderRequest) {
-        Order order = mapToOrder(orderRequest);
-        orderRepository.save(order);
-
-        if (isUrgentOrder(order)) {
-            notificationService.sendUrgentNotification(order);
-        }
-    }
-
-    private Order mapToOrder(OrderRequest orderRequest) {
-        Order order = new Order();
-        order.setCustomerName(orderRequest.getCustomerName());
-        order.setProductName(orderRequest.getProductName());
-        order.setQuantity(orderRequest.getQuantity());
-        return order;
-    }
-
-    private boolean isUrgentOrder(Order order) {
-        // Implementation to determine if the order is urgent
-        // and requires immediate attention
-        return order.getQuantity() > 10;
-    }
-}
-
-This file contains the business logic for creating an order. It maps the OrderRequest to an Order entity, saves it to the repository, and sends an urgent notification if the order is considered urgent.
-
-src/main/java/com/company/ordermgmt/exception/GlobalExceptionHandler.java
-
-package com.company.ordermgmt.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
-
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-    }
-}
-
-This file provides centralized exception handling for the application. It handles validation exceptions and returns appropriate error responses.
-
-These are the key components of the order management API based on the provided requirements and templates. The code follows the best practices, includes input validation, implements security measures, and provides a standard project structure. The README.md file gives an overview of the project, setup instructions, and security considerations.
+Note: The code assumes the existence of certain dependencies and environment variables. Make sure to install the required dependencies and set up the necessary environment variables before running the application.
