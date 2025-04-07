@@ -1,20 +1,24 @@
-import jwt from 'jsonwebtoken';
-import { jwtConfig } from '../config/authConfig';
+import Joi from 'joi';
+import { ValidationError } from './errors';
 
-const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+const validationMiddleware = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body);
   
-  if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
+  if (error) {
+    throw new ValidationError(error.details);
   }
   
-  try {
-    const decoded = jwt.verify(token, jwtConfig.secret);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
+  next();
 };
 
-export default authMiddleware;
+export const orderSchema = Joi.object({
+  customerId: Joi.string().required(),
+  items: Joi.array().items(
+    Joi.object({
+      productId: Joi.string().required(),
+      quantity: Joi.number().integer().min(1).required()
+    })
+  ).required()
+});
+
+export default validationMiddleware;
