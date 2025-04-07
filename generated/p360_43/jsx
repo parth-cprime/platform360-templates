@@ -1,136 +1,92 @@
-// securityConfig.js
-const securityConfig = {
-    helmet: {
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", "data:", "https:"],
-                connectSrc: ["'self'"]
-            }
-        }
-    },
-    rateLimit: {
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100 // limit each IP to 100 requests per windowMs
-    },
-    cors: {
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true
-    }
-};
-
-// authUtils.js
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-
-const jwtConfig = {
-    secret: process.env.JWT_SECRET,
-    expiresIn: '1h',
-    algorithm: 'HS256'
-};
-
-const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
-};
-
-const generateToken = (user) => {
-    return jwt.sign({ userId: user.id }, jwtConfig.secret, {
-        expiresIn: jwtConfig.expiresIn,
-        algorithm: jwtConfig.algorithm
-    });
-};
-
-// inputValidation.js
-const Joi = require('joi');
+// src/components/OrderForm.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import Joi from 'joi';
 
 const orderSchema = Joi.object({
-    customerId: Joi.string().required(),
-    items: Joi.array().items(
-        Joi.object({
-            productId: Joi.string().required(),
-            quantity: Joi.number().integer().min(1).required()
-        })
-    ).min(1).required(),
-    shippingAddress: Joi.object({
-        street: Joi.string().required(),
-        city: Joi.string().required(),
-        zipCode: Joi.string().required()
-    }).required()
+  customerName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  productId: Joi.string().required(),
+  quantity: Joi.number().min(1).required(),
 });
 
-// errorHandler.js
-const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
-    
-    if (err instanceof Joi.ValidationError) {
-        return res.status(400).json({
-            error: 'Validation Error',
-            details: err.details
-        });
+const OrderForm = () => {
+  const [formData, setFormData] = useState({
+    customerName: '',
+    email: '',
+    productId: '',
+    quantity: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await orderSchema.validateAsync(formData);
+      await axios.post('/api/orders', formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      alert('Order submitted successfully!');
+      setFormData({
+        customerName: '',
+        email: '',
+        productId: '',
+        quantity: '',
+      });
+    } catch (error) {
+      if (error.isJoi) {
+        alert('Validation error: ' + error.details[0].message);
+      } else {
+        console.error('Error submitting order:', error);
+        alert('An error occurred while submitting the order.');
+      }
     }
-    
-    if (err instanceof jwt.JsonWebTokenError) {
-        return res.status(401).json({
-            error: 'Authentication Error',
-            message: 'Invalid token'
-        });
-    }
-    
-    res.status(500).json({
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred'
-    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="customerName"
+        value={formData.customerName}
+        onChange={handleChange}
+        placeholder="Customer Name"
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        placeholder="Email"
+        required
+      />
+      <input
+        type="text"
+        name="productId"
+        value={formData.productId}
+        onChange={handleChange}
+        placeholder="Product ID"
+        required
+      />
+      <input
+        type="number"
+        name="quantity"
+        value={formData.quantity}
+        onChange={handleChange}
+        placeholder="Quantity"
+        min="1"
+        required
+      />
+      <button type="submit">Submit Order</button>
+    </form>
+  );
 };
 
-// orderRoutes.js
-const express = require('express');
-const router = express.Router();
-const { orderSchema } = require('./inputValidation');
-const { generateToken } = require('./authUtils');
-
-router.post('/orders', async (req, res, next) => {
-    try {
-        await orderSchema.validateAsync(req.body);
-        
-        // Process the order and save it to the database
-        const order = await saveOrder(req.body);
-        
-        // Generate JWT token
-        const token = generateToken(order);
-        
-        res.status(201).json({ message: 'Order created successfully', token });
-    } catch (error) {
-        next(error);
-    }
-});
-
-// app.js
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const { securityConfig } = require('./securityConfig');
-const { errorHandler } = require('./errorHandler');
-const orderRoutes = require('./orderRoutes');
-
-const app = express();
-
-// Apply security middleware
-app.use(helmet(securityConfig.helmet));
-app.use(rateLimit(securityConfig.rateLimit));
-app.use(cors(securityConfig.cors));
-
-// Apply order routes
-app.use('/api', orderRoutes);
-
-// Error handling middleware
-app.use(errorHandler);
-
-// Start the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+export default OrderForm;
