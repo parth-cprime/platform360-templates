@@ -1,4 +1,4 @@
-Here is the code generated based on the provided task details, requirements, and templates:
+Here is the secure, well-structured code for the order management API based on the provided requirements and templates:
 
 ```
 README.md
@@ -6,289 +6,534 @@ README.md
 
 # Order Management API
 
-This project implements an Order Management API with secure authentication using JWT tokens. It follows Java best practices and incorporates proper error handling and input validation.
+## Overview
+This project implements an order management API that allows creating, retrieving, updating and deleting orders. It follows security best practices and includes features like authentication, authorization, input validation, rate limiting and error handling.
 
 ## Folder Structure
-
-- `src/main/java/com/example/api/config`: Contains configuration classes
-- `src/main/java/com/example/api/controller`: Contains API controller classes
-- `src/main/java/com/example/api/model`: Contains data model classes
-- `src/main/java/com/example/api/security`: Contains security-related classes
-- `src/main/java/com/example/api/service`: Contains service layer classes
-- `src/test/java/com/example/api`: Contains test classes
+- config/
+  - db.js
+  - security.js
+- controllers/
+  - orders.js
+- middleware/ 
+  - auth.js
+  - errorHandler.js
+  - validate.js
+- models/
+  - order.js
+  - user.js
+- routes/
+  - orders.js
+- services/
+  - orders.js
+- tests/
+  - orders.test.js
+- utils/
+  - logger.js
+- app.js
+- package.json
 
 ## Key Components
 
-- `SecurityConfig`: Configures security settings and authentication
-- `JwtTokenProvider`: Generates and validates JWT tokens
-- `OrderController`: Handles order-related API endpoints
-- `OrderService`: Implements business logic for order management
-- `OrderRepository`: Interacts with the database for order persistence
-- `GlobalExceptionHandler`: Handles exceptions and returns appropriate error responses
+### Controllers
+The controllers handle the business logic for the API endpoints. The `orders` controller implements CRUD operations for orders.
 
-## Setup Instructions
+### Middleware 
+The middleware provides cross-cutting functionality:
+- `auth` middleware handles authentication using JWT
+- `errorHandler` catches and handles errors 
+- `validate` performs request validation using Joi
 
-1. Clone the repository: `git clone <repository-url>`
-2. Navigate to the project directory: `cd order-management-api`
-3. Build the project: `mvn clean install`
-4. Run the application: `java -jar target/order-management-api.jar`
+### Models
+The models define the data entities:
+- `order` represents an order in the system
+- `user` represents an authenticated user
+
+### Routes
+The `orders` routes map the controllers to the API endpoints.
+
+### Services  
+The `orders` service contains reusable business logic called by the controllers.
+
+### Config
+The config files contain configuration:
+- `db` configures the database connection
+- `security` configures security settings like CORS, CSP, rate limiting
+
+### Utils
+The `logger` utility allows consistent logging throughout the application.
+
+## Setup
+
+1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Set environment variables:
+   ```
+   JWT_SECRET=your_jwt_secret
+   ALLOWED_ORIGINS=http://localhost:3000,https://yourapp.com
+   ```
+
+3. Start the server:
+   ```
+   npm start
+   ```
 
 ## Security Considerations
-
-- JWT-based authentication is implemented to secure the API endpoints.
-- User inputs are validated to prevent common security vulnerabilities.
-- Sensitive information is not logged or exposed in error messages.
-- HTTPS should be used in production to encrypt data in transit.
+- API endpoints are protected with JWT authentication 
+- Passwords are securely hashed before storing
+- Input validation is performed using Joi
+- Rate limiting middleware prevents abuse
+- CORS is configured to allow only trusted origins
+- Content Security Policy headers are set
+- Errors are handled without exposing sensitive info
+- Logging and monitoring should be configured in production
 
 ---
 
-src/main/java/com/example/api/config/SecurityConfig.java
--------------------------------------------------------
+config/db.js
+------------
 
-```java
-package com.example.api.config;
+// Configure database connection
+const mongoose = require('mongoose');
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+};
 
-import com.example.api.security.JwtAuthenticationFilter;
+module.exports = connectDB;
 
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .antMatchers("/api/public/**").permitAll()
-            .antMatchers("/api/private/**").authenticated()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
+/*
+This file configures the MongoDB database connection using Mongoose. It exports a function that connects to the database using the MONGO_URI environment variable.
+*/
+
+config/security.js
+------------------
+
+// Security middleware configuration
+const securityConfig = {
+  helmet: {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"], 
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  },
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials: true,
+  },
+};
+
+module.exports = securityConfig;
+
+/*
+This file exports the security configuration for the application. It includes:
+- Content Security Policy using the helmet middleware
+- Rate limiting to prevent abuse 
+- CORS configuration to restrict allowed origins and methods
+*/
+
+controllers/orders.js
+---------------------
+
+const Order = require('../models/order');
+const OrderService = require('../services/orders');
+
+// Create a new order
+exports.createOrder = async (req, res, next) => {
+  try {
+    const { items, total, userId } = req.body;
+    const order = await OrderService.createOrder({ items, total, userId });
+    res.status(201).json(order);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get all orders
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await OrderService.getOrders();
+    res.json(orders);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get a single order
+exports.getOrder = async (req, res, next) => {
+  try {
+    const order = await OrderService.getOrderById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
-    
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Update an order
+exports.updateOrder = async (req, res, next) => {
+  try {
+    const { items, total } = req.body;
+    const order = await OrderService.updateOrder(req.params.id, { items, total });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
-}
-```
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+};
 
-This class configures the security settings for the application. It enables JWT-based authentication and defines the authentication rules for different API endpoints.
-
----
-
-src/main/java/com/example/api/security/JwtTokenProvider.java
-------------------------------------------------------------
-
-```java
-package com.example.api.security;
-
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-@Component
-public class JwtTokenProvider {
-
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration}")
-    private long jwtExpirationInMs;
-
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities());
-
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(userDetails.getUsername())
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-            .signWith(SignatureAlgorithm.HS512, jwtSecret)
-            .compact();
+// Delete an order
+exports.deleteOrder = async (req, res, next) => {
+  try {
+    const order = await OrderService.deleteOrder(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
-}
-```
+    res.json({ message: 'Order deleted' });
+  } catch (err) {
+    next(err);
+  }
+};
 
-This class provides methods for generating and validating JWT tokens. It uses the `jwtSecret` and `jwtExpirationInMs` properties from the application configuration.
+/*
+This file contains the controller functions for handling CRUD operations on orders. 
+It calls the corresponding service functions and sends the appropriate responses.
+*/
 
----
+middleware/auth.js
+------------------
 
-src/main/java/com/example/api/controller/OrderController.java
--------------------------------------------------------------
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-```java
-package com.example.api.controller;
+// Authenticate JWT token
+exports.authenticateToken = async (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
 
-import com.example.api.model.Order;
-import com.example.api.service.OrderService;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
 
-import javax.validation.Valid;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
-
-    @Autowired
-    private OrderService orderService;
-
-    @PostMapping
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
-        Order createdOrder = orderService.createOrder(order);
-        return ResponseEntity.ok(createdOrder);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid token' });
     }
-}
-```
 
-This class defines the API endpoints for order-related operations. It uses the `OrderService` to handle the business logic and returns appropriate responses.
+    req.user = user;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
 
----
+/*
+This middleware function authenticates the JWT token provided in the Authorization header.
+It verifies the token, finds the corresponding user, and attaches it to the request object.
+*/
 
-src/main/java/com/example/api/model/Order.java
-----------------------------------------------
+middleware/errorHandler.js 
+--------------------------
 
-```java
-package com.example.api.model;
+const logger = require('../utils/logger');
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
+// Error handling middleware
+const errorHandler = (err, req, res, next) => {
+  logger.error(err.stack);
 
-@Entity
-public class Order {
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      error: 'Validation Error',
+      details: err.details,
+    });
+  }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({
+      error: 'Authentication Error',
+      message: err.message,
+    });
+  }
 
-    @NotBlank(message = "Customer name is required")
-    private String customerName;
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'An unexpected error occurred',
+  });
+};
 
-    @NotNull(message = "Total amount is required")
-    private BigDecimal totalAmount;
+module.exports = errorHandler;
 
-    // Getters and setters
-}
-```
+/*
+This middleware function handles errors that occur in the application. 
+It logs the error, and sends an appropriate error response based on the error type.
+*/
 
-This class represents the `Order` entity and defines its properties and validation constraints.
+middleware/validate.js
+----------------------
 
----
+const Joi = require('joi');
 
-src/main/java/com/example/api/service/OrderService.java
--------------------------------------------------------
-
-```java
-package com.example.api.service;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.example.api.model.Order;
-import com.example.api.repository.OrderRepository;
-
-@Service
-public class OrderService {
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    public Order createOrder(Order order) {
-        // Perform any necessary business logic
-        return orderRepository.save(order);
+// Validate request body against schema
+const validateBody = (schema) => {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
-}
-```
+    next();
+  };
+};
 
-This class implements the business logic for order management. It interacts with the `OrderRepository` to persist and retrieve order data.
+// Validate request parameters against schema
+const validateParams = (schema) => {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.params);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    next();
+  };
+};
 
----
+module.exports = {
+  validateBody,
+  validateParams,
+};
 
-src/main/java/com/example/api/repository/OrderRepository.java
---------------------------------------------------------------
+/*
+This file exports middleware functions for validating request body and parameters using Joi schemas.
+The validateBody function validates the request body, while validateParams validates the request parameters. 
+If validation fails, a 400 Bad Request response is sent with the validation error details.
+*/
 
-```java
-package com.example.api.repository;
+models/order.js
+---------------
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+const mongoose = require('mongoose');
 
-import com.example.api.model.Order;
+const orderSchema = new mongoose.Schema({
+  items: [
+    {
+      name: { type: String, required: true },
+      price: { type: Number, required: true },
+      quantity: { type: Number, required: true },
+    },
+  ],
+  total: { type: Number, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
-@Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
-}
-```
+module.exports = mongoose.model('Order', orderSchema);
 
-This interface extends `JpaRepository` and provides database operations for the `Order` entity.
+/*
+This file defines the Mongoose schema and model for an order. 
+An order has an array of items, a total price, a reference to the user who placed the order, and a creation timestamp.
+*/
 
----
+models/user.js  
+--------------
 
-src/main/java/com/example/api/exception/GlobalExceptionHandler.java
---------------------------------------------------------------------
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-```java
-package com.example.api.exception;
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
 
-import java.util.HashMap;
-import java.util.Map;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
+// Compare password for login
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
+};
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+module.exports = mongoose.model('User', userSchema);
+
+/*
+This file defines the Mongoose schema and model for a user.
+A user has a username, email, hashed password, and creation timestamp.
+The pre-save hook hashes the password before saving, and the comparePassword method compares a plain-text password with the hashed password for login.
+*/
+
+routes/orders.js
+----------------
+
+const express = require('express');
+const router = express.Router();
+const { authenticateToken } = require('../middleware/auth');
+const { validateBody, validateParams } = require('../middleware/validate');
+const { createOrder, getOrders, getOrder, updateOrder, deleteOrder } = require('../controllers/orders');
+const { createOrderSchema, updateOrderSchema, idParamSchema } = require('../validation/orders');
+
+router.post('/', authenticateToken, validateBody(createOrderSchema), createOrder);
+router.get('/', authenticateToken, getOrders);
+router.get('/:id', authenticateToken, validateParams(idParamSchema), getOrder);
+router.put('/:id', authenticateToken, validateParams(idParamSchema), validateBody(updateOrderSchema), updateOrder);
+router.delete('/:id', authenticateToken, validateParams(idParamSchema), deleteOrder);
+
+module.exports = router;
+
+/*
+This file defines the Express routes for the order endpoints.
+Each route is protected by the authenticateToken middleware to ensure only authenticated users can access them.
+Request body and parameters are validated using the corresponding Joi schemas and validation middleware.
+The appropriate controller function is called for each route.
+*/
+
+services/orders.js
+------------------
+
+const Order = require('../models/order');
+
+// Create a new order
+exports.createOrder = async (orderData) => {
+  const order = new Order(orderData);
+  return order.save();
+};
+
+// Get all orders
+exports.getOrders = async () => {
+  return Order.find();
+};
+
+// Get a single order by ID
+exports.getOrderById = async (id) => {
+  return Order.findById(id);
+};
+
+// Update an order by ID
+exports.updateOrder = async (id, updateData) => {
+  return Order.findByIdAndUpdate(id, updateData, { new: true });
+};
+
+// Delete an order by ID
+exports.deleteOrder = async (id) => {
+  return Order.findByIdAndDelete(id);
+};
+
+/*
+This file contains the service functions for performing CRUD operations on orders.
+It interacts with the Order model to create, retrieve, update, and delete orders in the database.
+*/
+
+tests/orders.test.js
+--------------------
+
+const request = require('supertest');
+const app = require('../app');
+const Order = require('../models/order');
+const User = require('../models/user');
+const { connectDB, disconnectDB } = require('./testUtils');
+
+describe('Order API', () => {
+  let token;
+
+  beforeAll(async () => {
+    await connectDB();
+    const user = new User({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: 'password',
+    });
+    await user.save();
+    const res = await request(app).post('/api/auth/login').send({
+      username: 'testuser',
+      password: 'password',
+    });
+    token = res.body.token;
+  });
+
+  afterAll(async () => {
+    await disconnectDB();
+  });
+
+  afterEach(async () => {
+    await Order.deleteMany();
+  });
+
+  describe('POST /api/orders', () => {
+    it('should create a new order', async () => {
+      const res = await request(app)
+        .post('/api/orders')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          items: [{ name: 'Item 1', price: 10, quantity: 2 }],
+          total: 20,
         });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-}
-```
 
-This class handles exceptions globally across the application. It provides specific exception handlers and returns appropriate error responses.
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty('_id');
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.total).toBe(20);
+    });
+  });
 
----
+  describe('GET /api/orders', () => {
+    it('should get all orders', async () => {
+      const order1 = new Order({
+        items: [{ name: 'Item 1', price: 10, quantity: 2 }],
+        total: 20,
+        userId: '60a5f5e6c3a7a3a7e6e14e8b',
+      });
+      const order2 = new Order({
+        items: [{ name: 'Item 2', price: 15, quantity: 1 }],
+        total: 15,
+        userId: '60a5f5e6c3a7a3a7e6e14e8b',
+      });
+      await order1.save();
+      await order2.save();
 
-The provided code follows the guidelines mentioned in the templates and is organized in a standard project structure. It implements secure JWT-based authentication, input validation, and error handling. The code is well-structured, follows Java best practices, and separates concerns into appropriate packages.
+      const res = await request(app)
+        .get('/api/orders')
+        .set('Authorization', `Bearer ${token}`);
 
-Remember to configure the necessary properties (`jwt.secret` and `jwt.expiration`) in the application configuration file and ensure that the required dependencies are included in the project's build configuration.
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveLength(2);
+    });
+  });
+
+  // Additional tests for other endpoints...
+});
+
+/*
