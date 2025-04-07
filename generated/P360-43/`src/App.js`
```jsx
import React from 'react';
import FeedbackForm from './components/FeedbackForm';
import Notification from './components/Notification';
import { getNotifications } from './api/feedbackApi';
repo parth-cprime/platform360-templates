@@ -1,0 +1,31 @@
+const App = () => {
+  const [notifications, setNotifications] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await getNotifications();
+        setNotifications(data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  return (
+    <div>
+      <h1>Customer Feedback</h1>
+      <FeedbackForm />
+      <h2>Notifications</h2>
+      {notifications.map((notification) => (
+        <Notification key={notification.id} message={notification.message} />
+      ))}
+    </div>
+  );
+};
+
+export default App;
+```
+This file serves as the main component of the application. It renders the `FeedbackForm` and `Notification` components and fetches notifications from the API using the `getNotifications` function.
