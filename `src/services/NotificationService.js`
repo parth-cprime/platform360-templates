@@ -1,0 +1,17 @@
+import axios from 'axios';
+
+const NotificationService = {
+  async sendNotification(feedback) {
+    try {
+      await axios.post('/api/notifications', feedback);
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      throw error;
+    }
+  },
+};
+
+export default NotificationService;
+
+Description:
+This file contains the `NotificationService`, which is responsible for sending notifications to the appropriate customer service team member when urgent feedback is submitted. It uses the `axios` library to make a POST request to the `/api/notifications` endpoint with the feedback data.
