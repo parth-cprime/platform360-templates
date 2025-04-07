@@ -1,92 +1,14 @@
-// src/components/OrderForm.js
-import React, { useState } from 'react';
-import axios from 'axios';
-import Joi from 'joi';
+// src/pages/OrderPage.js
+import React from 'react';
+import OrderForm from '../components/OrderForm';
 
-const orderSchema = Joi.object({
-  customerName: Joi.string().required(),
-  email: Joi.string().email().required(),
-  productId: Joi.string().required(),
-  quantity: Joi.number().min(1).required(),
-});
-
-const OrderForm = () => {
-  const [formData, setFormData] = useState({
-    customerName: '',
-    email: '',
-    productId: '',
-    quantity: '',
-  });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await orderSchema.validateAsync(formData);
-      await axios.post('/api/orders', formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      alert('Order submitted successfully!');
-      setFormData({
-        customerName: '',
-        email: '',
-        productId: '',
-        quantity: '',
-      });
-    } catch (error) {
-      if (error.isJoi) {
-        alert('Validation error: ' + error.details[0].message);
-      } else {
-        console.error('Error submitting order:', error);
-        alert('An error occurred while submitting the order.');
-      }
-    }
-  };
-
+const OrderPage = () => {
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        name="customerName"
-        value={formData.customerName}
-        onChange={handleChange}
-        placeholder="Customer Name"
-        required
-      />
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="Email"
-        required
-      />
-      <input
-        type="text"
-        name="productId"
-        value={formData.productId}
-        onChange={handleChange}
-        placeholder="Product ID"
-        required
-      />
-      <input
-        type="number"
-        name="quantity"
-        value={formData.quantity}
-        onChange={handleChange}
-        placeholder="Quantity"
-        min="1"
-        required
-      />
-      <button type="submit">Submit Order</button>
-    </form>
+    <div>
+      <h1>Order Management</h1>
+      <OrderForm />
+    </div>
   );
 };
 
-export default OrderForm;
+export default OrderPage;
