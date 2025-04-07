@@ -1,41 +1,22 @@
-// src/models/Order.js
+// src/middleware/AuthMiddleware.js
 
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-const orderSchema = new mongoose.Schema({
-  customerName: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  products: [
-    {
-      name: {
-        type: String,
-        required: true
-      },
-      quantity: {
-        type: Number,
-        required: true
-      }
-    }
-  ],
-  totalAmount: {
-    type: Number,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered'],
-    default: 'pending'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+const authMiddleware = (req, res, next) => {
+  const token = req.header('Authorization');
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
   }
-});
 
-module.exports = mongoose.model('Order', orderSchema);
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+module.exports = authMiddleware;
