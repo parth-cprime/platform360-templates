@@ -1,72 +1,91 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
 
-const SampleComponent = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+const VWOIntegration = () => {
+  useEffect(() => {
+    // Load the VWO script asynchronously
+    const loadVWOScript = () => {
+      window._vwo_code = window._vwo_code || (function () {
+        var account_id = 'YOUR_ACCOUNT_ID',
+          settings_tolerance = 2000,
+          library_tolerance = 2500,
+          use_existing_jquery = false,
+          is_spa = 1,
+          hide_element = 'body',
+          f = false,
+          d = document,
+          code = {
+            use_existing_jquery: function () {
+              return use_existing_jquery;
+            },
+            library_tolerance: function () {
+              return library_tolerance;
+            },
+            finish: function () {
+              if (!f) {
+                f = true;
+                var a = d.getElementById('_vis_opt_path_hides');
+                if (a) a.parentNode.removeChild(a);
+              }
+            },
+            finished: function () {
+              return f;
+            },
+            load: function (a) {
+              var b = d.createElement('script');
+              b.src = a;
+              b.type = 'text/javascript';
+              b.innerText;
+              b.onerror = function () {
+                _vwo_code.finish();
+              };
+              d.getElementsByTagName('head')[0].appendChild(b);
+            },
+            init: function () {
+              window.settings_timer = setTimeout(function () {
+                _vwo_code.finish();
+              }, settings_tolerance);
+              var a = d.createElement('style'),
+                b = hide_element
+                  ? hide_element + '{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}'
+                  : '',
+                h = d.getElementsByTagName('head')[0];
+              a.setAttribute('id', '_vis_opt_path_hides');
+              a.setAttribute('type', 'text/css');
+              if (a.styleSheet) a.styleSheet.cssText = b;
+              else a.appendChild(d.createTextNode(b));
+              h.appendChild(a);
+              this.load(
+                'https://dev.visualwebsiteoptimizer.com/j.php?a=' +
+                  account_id +
+                  '&u=' +
+                  encodeURIComponent(d.URL) +
+                  '&f=' +
+                  +is_spa +
+                  '&r=' +
+                  Math.random()
+              );
+              return settings_timer;
+            },
+          };
+        window._vwo_settings_timer = code.init();
+        return code;
+      })();
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Make a secure API call using basic authentication
-      const response = await axios.post(
-        '/api/sample',
-        { message },
-        {
-          auth: {
-            username,
-            password,
-          },
-        }
-      );
-
-      // Handle the response
-      console.log(response.data);
-      // Clear the form
-      setMessage('');
-    } catch (error) {
-      console.error('Error:', error);
-      // Handle the error
+    // Check if the script is already loaded
+    if (!window._vwo_code) {
+      loadVWOScript();
     }
-  };
 
-  return (
-    <div>
-      <h1>Sample Component</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username:
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Password:
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Message:
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            required
-          />
-        </label>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  );
+    // Clean up the script on component unmount
+    return () => {
+      if (window._vwo_code && window._vwo_settings_timer) {
+        clearTimeout(window._vwo_settings_timer);
+      }
+    };
+  }, []);
+
+  return <div>VWO Integration</div>;
 };
 
-export default SampleComponent;
+export default VWOIntegration;
