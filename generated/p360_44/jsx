@@ -1,87 +1,95 @@
-// App.js
-import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import LeadForm from './components/LeadForm';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-
-function App() {
-  return (
-    <Router>
-      <div className="app">
-        <Header />
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms-of-service" component={TermsOfService} />
-        </Switch>
-        <LeadForm />
-        <Footer />
-      </div>
-    </Router>
-  );
-}
-
-export default App;
-
-// HomePage.js
-import React from 'react';
-import HeroSection from '../components/HeroSection';
-import FeaturesSection from '../components/FeaturesSection';
-import TestimonialsSection from '../components/TestimonialsSection';
-
-function HomePage() {
-  return (
-    <div className="home-page">
-      <HeroSection />
-      <FeaturesSection />
-      <TestimonialsSection />
-    </div>
-  );
-}
-
-export default HomePage;
-
-// LeadForm.js
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet';
 import axios from 'axios';
 
-function LeadForm() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+const MarketingPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await axios.post('/api/leads', { name, email });
-      // Handle success response
+      const response = await axios.post('/api/leads', formData);
+      console.log('Lead submitted successfully:', response.data);
+      // Reset form data
+      setFormData({
+        name: '',
+        email: '',
+      });
     } catch (error) {
-      // Handle error
+      console.error('Error submitting lead:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <button type="submit">Submit</button>
-    </form>
-  );
-}
+    <div>
+      <Helmet>
+        <title>[Product/Service Name] - Marketing Page</title>
+        <meta name="description" content="Discover the value of [Product/Service Name]. Learn how it can benefit you and improve your experience." />
+      </Helmet>
 
-export default LeadForm;
+      <header>
+        <h1>[Product/Service Name]</h1>
+        <p>Discover the value of [Product/Service Name]</p>
+      </header>
+
+      <main>
+        <section>
+          <h2>Key Benefits</h2>
+          <ul>
+            <li>Benefit 1</li>
+            <li>Benefit 2</li>
+            <li>Benefit 3</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How It Works</h2>
+          <p>Explain how [Product/Service Name] works and its key features.</p>
+        </section>
+
+        <section>
+          <h2>Get Started</h2>
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name">Name:</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <button type="submit">Submit</button>
+          </form>
+        </section>
+      </main>
+
+      <footer>
+        <p>&copy; 2023 [Product/Service Name]. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+};
+
+export default MarketingPage;
