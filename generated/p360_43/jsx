@@ -1,18 +1,52 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import OrderPage from './pages/OrderPage';
-import PrivateRoute from './components/PrivateRoute';
+import React, { useState } from 'react';
+import { createOrder } from '../services/OrderService';
 
-const App = () => {
+const OrderForm = () => {
+  const [orderData, setOrderData] = useState({
+    customerName: '',
+    productName: '',
+    quantity: 0,
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createOrder(orderData);
+      alert('Order submitted successfully');
+      setOrderData({ customerName: '', productName: '', quantity: 0 });
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      alert('Failed to submit order. Please try again.');
+    }
+  };
+
   return (
-    <Router>
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <PrivateRoute path="/" component={OrderPage} />
-      </Switch>
-    </Router>
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Customer Name"
+        value={orderData.customerName}
+        onChange={(e) => setOrderData({ ...orderData, customerName: e.target.value })}
+        required
+      />
+      <input
+        type="text"
+        placeholder="Product Name"  
+        value={orderData.productName}
+        onChange={(e) => setOrderData({ ...orderData, productName: e.target.value })}
+        required
+      />
+      <input
+        type="number"
+        placeholder="Quantity"
+        value={orderData.quantity}
+        onChange={(e) => setOrderData({ ...orderData, quantity: parseInt(e.target.value) })} 
+        min="1"
+        required
+      />
+      <button type="submit">Submit Order</button>
+    </form>
   );
 };
 
-export default App;
+export default OrderForm;
