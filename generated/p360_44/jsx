@@ -4,7 +4,8 @@ import axios from 'axios';
 const SampleComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,22 +19,17 @@ const SampleComponent = () => {
         },
       });
 
-      // Handle the response data
-      console.log(response.data);
+      setData(response.data);
+      setError(null);
     } catch (error) {
-      // Handle authentication errors
-      if (error.response && error.response.status === 401) {
-        setError('Invalid username or password');
-      } else {
-        setError('An error occurred. Please try again.');
-      }
+      setData(null);
+      setError('Authentication failed. Please check your credentials.');
     }
   };
 
   return (
     <div>
       <h2>Sample Component</h2>
-      {error && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
@@ -55,6 +51,13 @@ const SampleComponent = () => {
         </div>
         <button type="submit">Submit</button>
       </form>
+      {error && <p>{error}</p>}
+      {data && (
+        <div>
+          <h3>Data:</h3>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 };
