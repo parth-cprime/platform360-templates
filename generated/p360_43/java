@@ -14,7 +14,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
+            .oauth2ResourceServer()
+            .jwt();
     }
     
     @Bean
@@ -27,8 +28,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 @Component
 public class JwtTokenProvider {
     
-    private final String jwtSecret = "your-secret-key";
-    private final long jwtExpirationInMs = 86400000; // 24 hours
+    private final String jwtSecret;
+    private final long jwtExpirationInMs;
     
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -54,9 +55,9 @@ public class OrderController {
         // Implementation for creating an order
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderById(@PathVariable Long id) {
-        // Implementation for retrieving an order by ID
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrder(@PathVariable Long orderId) {
+        // Implementation for retrieving an order
     }
     
     // Other order management endpoints
@@ -64,27 +65,16 @@ public class OrderController {
 
 // OrderDTO.java
 public class OrderDTO {
-    @NotNull(message = "Customer ID is required")
-    private Long customerId;
+    @NotBlank(message = "Customer name is required")
+    private String customerName;
     
-    @NotEmpty(message = "Order items cannot be empty")
-    private List<OrderItemDTO> items;
+    @NotBlank(message = "Product name is required")
+    private String productName;
     
-    @NotNull(message = "Order date is required")
-    private Date orderDate;
+    @Positive(message = "Quantity must be a positive value")
+    private int quantity;
     
-    // Getters and setters
-}
-
-// OrderItemDTO.java
-public class OrderItemDTO {
-    @NotNull(message = "Product ID is required")
-    private Long productId;
-    
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private Integer quantity;
-    
-    // Getters and setters
+    // Other order fields
 }
 
 // GlobalExceptionHandler.java
