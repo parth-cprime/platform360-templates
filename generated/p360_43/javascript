@@ -1,58 +1,25 @@
-// src/controllers/OrderController.js
+// src/services/OrderService.js
 
-const OrderService = require('../services/OrderService');
-const { validateCreateOrder, validateUpdateOrder } = require('../middleware/ValidationMiddleware');
+const Order = require('../models/Order');
 
-class OrderController {
-  async createOrder(req, res, next) {
-    try {
-      await validateCreateOrder(req.body);
-      const order = await OrderService.createOrder(req.body);
-      res.status(201).json(order);
-    } catch (error) {
-      next(error);
-    }
+class OrderService {
+  async createOrder(orderData) {
+    const order = new Order(orderData);
+    await order.save();
+    return order;
   }
 
-  async getOrder(req, res, next) {
-    try {
-      const order = await OrderService.getOrderById(req.params.id);
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' });
-      } else {
-        res.json(order);
-      }
-    } catch (error) {
-      next(error);
-    }
+  async getOrderById(orderId) {
+    return Order.findById(orderId);
   }
 
-  async updateOrder(req, res, next) {
-    try {
-      await validateUpdateOrder(req.body);
-      const order = await OrderService.updateOrder(req.params.id, req.body);
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' });
-      } else {
-        res.json(order);
-      }
-    } catch (error) {
-      next(error);
-    }
+  async updateOrder(orderId, orderData) {
+    return Order.findByIdAndUpdate(orderId, orderData, { new: true });
   }
 
-  async deleteOrder(req, res, next) {
-    try {
-      const deleted = await OrderService.deleteOrder(req.params.id);
-      if (!deleted) {
-        res.status(404).json({ error: 'Order not found' });
-      } else {
-        res.sendStatus(204);
-      }
-    } catch (error) {
-      next(error);
-    }
+  async deleteOrder(orderId) {
+    return Order.findByIdAndDelete(orderId);
   }
 }
 
-module.exports = new OrderController();
+module.exports = new OrderService();
