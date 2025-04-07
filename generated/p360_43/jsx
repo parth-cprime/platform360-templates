@@ -1,14 +1,16 @@
-// src/pages/OrderPage.js
+// src/App.js
 import React from 'react';
-import OrderForm from '../components/OrderForm';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import OrderPage from './pages/OrderPage';
 
-const OrderPage = () => {
+const App = () => {
   return (
-    <div>
-      <h1>Order Management</h1>
-      <OrderForm />
-    </div>
+    <Router>
+      <Switch>
+        <Route exact path="/orders" component={OrderPage} />
+      </Switch>
+    </Router>
   );
 };
 
-export default OrderPage;
+export default App;
