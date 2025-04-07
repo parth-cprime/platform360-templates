@@ -1,22 +1,13 @@
-// src/middleware/AuthMiddleware.js
+// src/middleware/ErrorMiddleware.js
 
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+const errorMiddleware = (err, req, res, next) => {
+  console.error(err);
 
-const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization');
-
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message });
   }
 
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  res.status(500).json({ error: 'Internal server error' });
 };
 
-module.exports = authMiddleware;
+module.exports = errorMiddleware;
