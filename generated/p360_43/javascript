@@ -1,13 +1,29 @@
-// src/middleware/ErrorMiddleware.js
+// src/middleware/ValidationMiddleware.js
 
-const errorMiddleware = (err, req, res, next) => {
-  console.error(err);
+const Joi = require('joi');
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({ error: err.message });
-  }
+const orderSchema = Joi.object({
+  customerName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  products: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      quantity: Joi.number().integer().min(1).required()
+    })
+  ).required(),
+  totalAmount: Joi.number().required(),
+  status: Joi.string().valid('pending', 'processing', 'shipped', 'delivered')
+});
 
-  res.status(500).json({ error: 'Internal server error' });
+const validateCreateOrder = (orderData) => {
+  return orderSchema.validateAsync(orderData);
 };
 
-module.exports = errorMiddleware;
+const validateUpdateOrder = (orderData) => {
+  return orderSchema.partial().validateAsync(orderData);
+};
+
+module.exports = {
+  validateCreateOrder,
+  validateUpdateOrder
+};
