@@ -1,0 +1,29 @@
+function OrderList() {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    async function fetchOrders() {
+      const data = await OrderService.getOrders();
+      setOrders(data);
+    }
+    fetchOrders();
+  }, []);
+
+  return (
+    <div>
+      <h1>Orders</h1>
+      <ul>
+        {orders.map(order => (
+          <li key={order.id}>
+            <Link to={`/orders/${order.id}`}>{order.title}</Link>
+          </li>
+        ))}
+      </ul>
+      <Link to="/create">Create Order</Link>
+    </div>
+  );
+}
+
+export default OrderList;
+```
+Description: A component that displays a list of orders fetched from the API. It uses the `OrderService` to make the API call and renders links to individual order details and a form to create new orders.
