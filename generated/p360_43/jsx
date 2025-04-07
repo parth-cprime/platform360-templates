@@ -1,28 +1,34 @@
-import OrderService from '../services/OrderService';
-import { AuthenticationError } from '../utils/errors';
+import OrderController from '../src/components/OrderController';
+import OrderService from '../src/services/OrderService';
 
-const OrderController = {
-  async createOrder(req, res) {
-    try {
-      const { customerId, items } = req.body;
-      
-      // Validate inputs
-      validateOrder(customerId, items);
-      
-      // Check authentication
-      if (!req.user) {
-        throw new AuthenticationError('Authentication required');
-      }
-      
-      const order = await OrderService.createOrder(customerId, items);
-      
-      res.status(201).json(order);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
+jest.mock('../src/services/OrderService');
+
+describe('OrderController', () => {
+  it('should create an order', async () => {
+    const req = {
+      body: {
+        customerId: 'customer123',
+        items: [
+          { productId: 'product1', quantity: 2 },
+          { productId: 'product2', quantity: 1 }
+        ]
+      },
+      user: { userId: 'user123' }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    
+    const order = { id: 'order123', customerId: 'customer123', status: 'PENDING' };
+    OrderService.createOrder.mockResolvedValue(order);
+    
+    await OrderController.createOrder(req, res);
+    
+    expect(OrderService.createOrder).toHaveBeenCalledWith('customer123', req.body.items);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(order);
+  });
   
-  // Other order related controller methods...
-};
-
-export default OrderController;
+  // More test cases...
+});
