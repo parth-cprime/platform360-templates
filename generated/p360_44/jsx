@@ -1,91 +1,81 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-const VWOIntegration = () => {
-  useEffect(() => {
-    // Load the VWO script asynchronously
-    const loadVWOScript = () => {
-      window._vwo_code = window._vwo_code || (function () {
-        var account_id = 'YOUR_ACCOUNT_ID',
-          settings_tolerance = 2000,
-          library_tolerance = 2500,
-          use_existing_jquery = false,
-          is_spa = 1,
-          hide_element = 'body',
-          f = false,
-          d = document,
-          code = {
-            use_existing_jquery: function () {
-              return use_existing_jquery;
-            },
-            library_tolerance: function () {
-              return library_tolerance;
-            },
-            finish: function () {
-              if (!f) {
-                f = true;
-                var a = d.getElementById('_vis_opt_path_hides');
-                if (a) a.parentNode.removeChild(a);
-              }
-            },
-            finished: function () {
-              return f;
-            },
-            load: function (a) {
-              var b = d.createElement('script');
-              b.src = a;
-              b.type = 'text/javascript';
-              b.innerText;
-              b.onerror = function () {
-                _vwo_code.finish();
-              };
-              d.getElementsByTagName('head')[0].appendChild(b);
-            },
-            init: function () {
-              window.settings_timer = setTimeout(function () {
-                _vwo_code.finish();
-              }, settings_tolerance);
-              var a = d.createElement('style'),
-                b = hide_element
-                  ? hide_element + '{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}'
-                  : '',
-                h = d.getElementsByTagName('head')[0];
-              a.setAttribute('id', '_vis_opt_path_hides');
-              a.setAttribute('type', 'text/css');
-              if (a.styleSheet) a.styleSheet.cssText = b;
-              else a.appendChild(d.createTextNode(b));
-              h.appendChild(a);
-              this.load(
-                'https://dev.visualwebsiteoptimizer.com/j.php?a=' +
-                  account_id +
-                  '&u=' +
-                  encodeURIComponent(d.URL) +
-                  '&f=' +
-                  +is_spa +
-                  '&r=' +
-                  Math.random()
-              );
-              return settings_timer;
-            },
-          };
-        window._vwo_settings_timer = code.init();
-        return code;
-      })();
-    };
+const MarketingPage = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-    // Check if the script is already loaded
-    if (!window._vwo_code) {
-      loadVWOScript();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post('/api/leads', { name, email });
+      console.log('Lead submitted successfully:', response.data);
+      // Clear form fields
+      setName('');
+      setEmail('');
+    } catch (error) {
+      console.error('Error submitting lead:', error);
     }
+  };
 
-    // Clean up the script on component unmount
-    return () => {
-      if (window._vwo_code && window._vwo_settings_timer) {
-        clearTimeout(window._vwo_settings_timer);
-      }
-    };
-  }, []);
+  return (
+    <div className="marketing-page">
+      <header>
+        <h1>[Product/Service Name]</h1>
+        <nav>
+          {/* Add navigation menu items */}
+        </nav>
+      </header>
 
-  return <div>VWO Integration</div>;
+      <main>
+        <section className="hero">
+          <h2>Compelling Headline</h2>
+          <p>Brief description highlighting the value proposition.</p>
+          <button>Call to Action</button>
+        </section>
+
+        <section className="features">
+          <h3>Key Features</h3>
+          {/* Add feature highlights */}
+        </section>
+
+        <section className="testimonials">
+          <h3>Testimonials</h3>
+          {/* Add customer testimonials */}
+        </section>
+
+        <section className="lead-capture">
+          <h3>Get Started</h3>
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="name">Name:</label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <button type="submit">Submit</button>
+          </form>
+        </section>
+      </main>
+
+      <footer>
+        {/* Add footer content */}
+      </footer>
+    </div>
+  );
 };
 
-export default VWOIntegration;
+export default MarketingPage;
