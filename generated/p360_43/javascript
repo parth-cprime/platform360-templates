@@ -1,115 +1,16 @@
-// orderApi.js
+import Order from '../models/Order';
 
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-import Joi from 'joi';
-
-// Security Configuration
-const securityConfig = {
-  helmet: {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"]
-      }
-    }
+const OrderService = {
+  async createOrder(customerId, items) {
+    const order = new Order(customerId, items);
+    
+    // Save order to database
+    await order.save();
+    
+    return order;
   },
-  rateLimit: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
-  },
-  cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-  }
+  
+  // Other order related service methods...
 };
 
-// JWT Authentication Configuration
-const jwtConfig = {
-  secret: process.env.JWT_SECRET,
-  expiresIn: '1h',
-  algorithm: 'HS256'
-};
-
-// Password Hashing
-const hashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
-};
-
-// Input Validation Schema
-const orderSchema = Joi.object({
-  customerId: Joi.string().required(),
-  orderItems: Joi.array().items(
-    Joi.object({
-      productId: Joi.string().required(),
-      quantity: Joi.number().integer().min(1).required()
-    })
-  ).required(),
-  shippingAddress: Joi.object({
-    street: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().required(),
-    zipCode: Joi.string().required()
-  }).required()
-});
-
-// Create Order API
-const createOrder = async (orderData) => {
-  try {
-    // Validate input data
-    await orderSchema.validateAsync(orderData);
-
-    // Hash sensitive data (if applicable)
-    const hashedData = { ...orderData };
-    // Example: hashedData.paymentInfo = await hashPassword(orderData.paymentInfo);
-
-    // Make API request to create order
-    const response = await axios.post('/api/orders', hashedData, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt.sign({ userId: orderData.customerId }, jwtConfig.secret, { expiresIn: jwtConfig.expiresIn })}` // Generate JWT token
-      }
-    });
-
-    return response.data;
-  } catch (error) {
-    // Handle validation errors
-    if (error instanceof Joi.ValidationError) {
-      throw new Error(`Validation Error: ${error.message}`);
-    }
-    // Handle other errors
-    throw new Error(`Error creating order: ${error.message}`);
-  }
-};
-
-// Error Handling Middleware
-const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
-
-  if (err instanceof Joi.ValidationError) {
-    return res.status(400).json({
-      error: 'Validation Error',
-      details: err.details
-    });
-  }
-
-  if (err instanceof jwt.JsonWebTokenError) {
-    return res.status(401).json({
-      error: 'Authentication Error',
-      message: 'Invalid token'
-    });
-  }
-
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'An unexpected error occurred'
-  });
-};
-
-export { createOrder, errorHandler };
+export default OrderService;
