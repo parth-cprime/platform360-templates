@@ -1,166 +1,125 @@
-Based on the provided task details, requirements, and security template, here's a secure implementation of the order management API in React:
+Here's the secure Java code for the order management API based on the provided task details, requirements, and security template:
 
-```jsx
-// securityConfig.js
-const securityConfig = {
-    helmet: {
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", "data:", "https:"],
-                connectSrc: ["'self'"]
-            }
-        }
-    },
-    rateLimit: {
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100 // limit each IP to 100 requests per windowMs
-    },
-    cors: {
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true
-    }
-};
-
-// authUtils.js
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-
-const jwtConfig = {
-    secret: process.env.JWT_SECRET,
-    expiresIn: '1h',
-    algorithm: 'HS256'
-};
-
-const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
-};
-
-const generateToken = (user) => {
-    return jwt.sign({ userId: user.id }, jwtConfig.secret, {
-        expiresIn: jwtConfig.expiresIn,
-        algorithm: jwtConfig.algorithm
-    });
-};
-
-// inputValidation.js
-const Joi = require('joi');
-
-const orderSchema = Joi.object({
-    customerId: Joi.string().required(),
-    items: Joi.array().items(
-        Joi.object({
-            productId: Joi.string().required(),
-            quantity: Joi.number().integer().min(1).required()
-        })
-    ).min(1).required(),
-    shippingAddress: Joi.object({
-        street: Joi.string().required(),
-        city: Joi.string().required(),
-        zipCode: Joi.string().required()
-    }).required()
-});
-
-// errorHandler.js
-const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
+```java
+// SecurityConfig.java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
     
-    if (err instanceof Joi.ValidationError) {
-        return res.status(400).json({
-            error: 'Validation Error',
-            details: err.details
-        });
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/public/**").permitAll()
+            .antMatchers("/api/orders/**").authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .oauth2ResourceServer()
+            .jwt();
     }
     
-    if (err instanceof jwt.JsonWebTokenError) {
-        return res.status(401).json({
-            error: 'Authentication Error',
-            message: 'Invalid token'
-        });
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+// JwtTokenProvider.java
+@Component
+public class JwtTokenProvider {
+    
+    private final String jwtSecret;
+    private final long jwtExpirationInMs;
+    
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", userDetails.getAuthorities());
+        
+        return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
+            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+            .compact();
+    }
+}
+
+// OrderController.java
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+    
+    @PostMapping
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        // Implementation for creating an order
     }
     
-    res.status(500).json({
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred'
-    });
-};
-
-// orderRoutes.js
-const express = require('express');
-const router = express.Router();
-const { orderSchema } = require('./inputValidation');
-const { generateToken } = require('./authUtils');
-
-router.post('/orders', async (req, res, next) => {
-    try {
-        await orderSchema.validateAsync(req.body);
-        
-        // Process the order and save it to the database
-        const order = await saveOrder(req.body);
-        
-        // Generate JWT token
-        const token = generateToken(order);
-        
-        res.status(201).json({ message: 'Order created successfully', token });
-    } catch (error) {
-        next(error);
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrder(@PathVariable Long orderId) {
+        // Implementation for retrieving an order
     }
-});
+    
+    // Other order management endpoints
+}
 
-// app.js
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const { securityConfig } = require('./securityConfig');
-const { errorHandler } = require('./errorHandler');
-const orderRoutes = require('./orderRoutes');
+// OrderDTO.java
+public class OrderDTO {
+    @NotBlank(message = "Customer name is required")
+    private String customerName;
+    
+    @NotBlank(message = "Product name is required")
+    private String productName;
+    
+    @Positive(message = "Quantity must be a positive value")
+    private int quantity;
+    
+    // Other order fields
+}
 
-const app = express();
-
-// Apply security middleware
-app.use(helmet(securityConfig.helmet));
-app.use(rateLimit(securityConfig.rateLimit));
-app.use(cors(securityConfig.cors));
-
-// Apply order routes
-app.use('/api', orderRoutes);
-
-// Error handling middleware
-app.use(errorHandler);
-
-// Start the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+// GlobalExceptionHandler.java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Validation Error",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Authentication Error",
+            ex.getMessage(),
+            HttpStatus.UNAUTHORIZED
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+}
 ```
 
-This implementation incorporates the following security measures:
+In this code:
 
-1. Security Configuration:
-   - Content Security Policy (CSP) is set up using the `helmet` middleware to restrict the sources of content.
-   - Rate limiting is applied using the `express-rate-limit` middleware to prevent excessive requests from a single IP.
-   - CORS is configured to allow requests only from specified origins.
+1. The `SecurityConfig` class is configured to use OAuth2 with JWT for authentication. It requires authentication for all endpoints under `/api/orders/**` and allows public access to endpoints under `/api/public/**`.
 
-2. Authentication:
-   - JWT (JSON Web Token) is used for authentication.
-   - The `generateToken` function creates a JWT token with the user's ID as the payload.
-   - The token is signed using a secret key and has an expiration time of 1 hour.
+2. The `JwtTokenProvider` class generates JWT tokens with user roles as claims.
 
-3. Input Validation:
-   - The `Joi` library is used for input validation.
-   - The `orderSchema` defines the expected structure and constraints for the order data.
-   - The `orderSchema.validateAsync` method is used to validate the incoming request body against the schema.
+3. The `OrderController` class defines the endpoints for order management, such as creating an order (`POST /api/orders`) and retrieving an order (`GET /api/orders/{orderId}`). Input validation is performed using the `@Valid` annotation and the `OrderDTO` class.
 
-4. Error Handling:
-   - A centralized error handling middleware (`errorHandler`) is implemented.
-   - It handles different types of errors, such as validation errors and authentication errors.
-   - Appropriate error responses are sent back to the client based on the error type.
+4. The `OrderDTO` class defines the structure of the order data transfer object and includes validation annotations to ensure data integrity.
 
-This code provides a starting point for implementing a secure order management API in React. It includes essential security measures like secure configuration, authentication, input validation, and error handling.
+5. The `GlobalExceptionHandler` class handles exceptions related to validation and authentication, providing appropriate error responses.
 
-Remember to handle additional security aspects like secure communication (HTTPS), secure storage of sensitive data, and proper authentication and authorization mechanisms throughout your application.
+Note: Make sure to properly secure the `jwtSecret` used for signing the JWT tokens and set an appropriate `jwtExpirationInMs` value based on your security requirements.
+
+Additionally, ensure that sensitive data, such as customer information and order details, are encrypted when stored in the database and transmitted over the network.
+
+Remember to thoroughly test the API endpoints, handle potential security vulnerabilities, and follow secure coding practices throughout the development process.
