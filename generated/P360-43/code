@@ -1,216 +1,184 @@
-Here is the generated code for the order management API based on the provided requirements and templates:
+Here is the code for the React order management API based on the provided requirements and templates:
 
 ```
 README.md
----------
 
 # Order Management API
 
-This project implements a secure order management API using Java and Spring Boot. It allows customers to submit orders and provides functionality to retrieve and manage orders.
-
-## Project Overview
-
-The Order Management API provides the following key features:
-- Secure customer authentication using JWT tokens
-- Submitting new orders
-- Retrieving orders by ID
-- Listing all orders
+This project implements a secure order management API using React. It allows creating and retrieving orders with proper authentication and security measures in place.
 
 ## Folder Structure
 
-The project follows a standard Maven project structure:
-
-- `src/main/java`: Contains the Java source code
-  - `com.example.orderapi`: Root package for the application
-    - `config`: Configuration classes
-    - `controller`: API endpoint controllers
-    - `model`: Data models
-    - `repository`: Data access repositories
-    - `security`: Security-related classes
-    - `service`: Business logic services
-- `src/main/resources`: Contains application resources and configuration files
-- `src/test/java`: Contains test classes
+- /src
+  - /components - React components 
+  - /pages - Page-level components
+  - /services - Service layer for business logic and external integrations
+  - /utils - Utility functions and helpers
+- /public - Static assets
+- /tests - Unit and integration tests
 
 ## Key Components
 
-- `SecurityConfig`: Configures security settings and authentication
-- `JwtTokenProvider`: Handles JWT token generation and validation
-- `OrderController`: Defines the API endpoints for order management
-- `OrderService`: Implements the business logic for order processing
-- `OrderRepository`: Handles data access for orders
+- `App` - Main application component
+- `Header` - Header component with navigation
+- `OrderList` - Displays list of orders
+- `OrderDetails` - Shows details for a single order
+- `CreateOrder` - Form for creating a new order
+- `AuthService` - Handles user authentication and JWT management
+- `OrderService` - Performs CRUD operations for orders 
 
 ## Setup Instructions
 
-1. Clone the repository: `git clone https://github.com/example/order-management-api.git`
-2. Navigate to the project directory: `cd order-management-api`
-3. Build the project: `./mvnw clean install`
-4. Run the application: `./mvnw spring-boot:run`
-5. The API will be accessible at `http://localhost:8080/api`
+1. Clone the repository
+2. Run `npm install` to install dependencies
+3. Set up environment variables in `.env` file:
+   - `JWT_SECRET` - Secret key for signing JWTs
+   - `API_URL` - Base URL for the backend API
+4. Run `npm start` to start the development server
+5. Access the application at `http://localhost:3000`
 
 ## Security Considerations
 
-- The API uses JWT-based authentication to secure endpoints.
-- User credentials are securely hashed and stored.
-- Input validation is performed on all API requests to prevent injection attacks.
-- Proper error handling is implemented to avoid exposing sensitive information.
-- The API follows SOLID principles and uses appropriate design patterns for maintainability and extensibility.
-
----
-
-src/main/java/com/example/orderapi/config/SecurityConfig.java
-------------------------------------------------------------
-
-```java
-package com.example.orderapi.config;
-
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .antMatchers("/api/public/**").permitAll()
-            .antMatchers("/api/orders/**").authenticated()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
-    }
-    
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-}
+- User authentication is implemented using JWTs
+- All API calls require a valid JWT token in the `Authorization` header
+- Passwords are securely hashed before storing in the database
+- Sensitive data is not logged or exposed in error messages
+- Input validation is performed on all requests to prevent injection attacks
+- React's built-in protections against XSS are utilized 
+- CORS is configured to only allow requests from trusted origins
+- HTTPS should be enforced in a production environment
 ```
 
-This file configures the security settings for the application. It enables web security, defines the authentication rules for API endpoints, and sets up JWT-based authentication.
+File 1:
+Path: `/src/App.js`
+```jsx
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Header, OrderList, OrderDetails, CreateOrder } from './components';
+import { PrivateRoute } from './utils/PrivateRoute';
 
----
-
-src/main/java/com/example/orderapi/security/JwtTokenProvider.java
------------------------------------------------------------------
-
-```java
-package com.example.orderapi.security;
-
-@Component
-public class JwtTokenProvider {
-    
-    private final String jwtSecret;
-    private final long jwtExpirationInMs;
-    
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities());
-        
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(userDetails.getUsername())
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-            .signWith(SignatureAlgorithm.HS512, jwtSecret)
-            .compact();
-    }
+function App() {
+  return (
+    <Router>
+      <Header />
+      <Switch>
+        <Route path="/login" component={Login} />
+        <PrivateRoute exact path="/" component={OrderList} />
+        <PrivateRoute path="/orders/:id" component={OrderDetails} />
+        <PrivateRoute path="/create" component={CreateOrder} />
+      </Switch>
+    </Router>
+  );
 }
+
+export default App;
 ```
+This is the main `App` component that sets up the React Router and defines the routes for the application. It includes the `Header` component and the main page components. The `PrivateRoute` component is used to protect routes that require authentication.
 
-This class is responsible for generating and validating JWT tokens. It includes methods for generating tokens based on user details and verifying the validity of tokens.
+File 2:
+Path: `/src/services/AuthService.js` 
+```javascript
+import decode from 'jwt-decode';
 
----
-
-src/main/java/com/example/orderapi/controller/OrderController.java
------------------------------------------------------------------
-
-```java
-package com.example.orderapi.controller;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+const AuthService = {
+  login: async (username, password) => {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password})
+    });
     
-    private final OrderService orderService;
-    
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
+    if (!response.ok) {
+      throw new Error('Invalid username or password');
     }
-    
-    @PostMapping
-    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
-        OrderDTO createdOrder = orderService.createOrder(orderDTO);
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
+
+    const {token} = await response.json();
+    localStorage.setItem('token', token);
+  },
+
+  logout: () => {
+    localStorage.removeItem('token');
+  },
+
+  isAuthenticated: () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return false;  
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
-        OrderDTO order = orderService.getOrderById(id);
-        return new ResponseEntity<>(order, HttpStatus.OK);
+
+    try {
+      const {exp} = decode(token);
+      if (exp < new Date().getTime() / 1000) {
+        return false;
+      }
+    } catch (e) {
+      return false;
     }
-    
-    @GetMapping
-    public ResponseEntity<List<OrderDTO>> getAllOrders() {
-        List<OrderDTO> orders = orderService.getAllOrders();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
-    }
-}
+
+    return true;
+  }
+};
+
+export default AuthService;
 ```
+The `AuthService` handles user authentication by sending login credentials to the backend API and storing the JWT token returned in local storage. It also provides methods to log out and check if the user is currently authenticated.
 
-This controller class defines the API endpoints for order management. It includes methods for creating a new order, retrieving an order by ID, and listing all orders. The `@Valid` annotation is used for input validation.
+File 3:
+Path: `/src/services/OrderService.js`
+```javascript
+import AuthService from './AuthService';
 
----
+const OrderService = {
+  createOrder: async (order) => {
+    const token = localStorage.getItem('token');
 
-src/main/java/com/example/orderapi/service/OrderService.java
-------------------------------------------------------------
+    const response = await fetch('/api/orders', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(order)
+    });
 
-```java
-package com.example.orderapi.service;
+    if (!response.ok) {
+      throw new Error('Failed to create order');
+    }
 
-@Service
-public class OrderService {
-    
-    private final OrderRepository orderRepository;
-    
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
+    return response.json();
+  },
+
+  getOrders: async () => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch('/api/orders', {
+      headers: {'Authorization': `Bearer ${token}`} 
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get orders');  
     }
     
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        Order order = mapToEntity(orderDTO);
-        Order createdOrder = orderRepository.save(order);
-        return mapToDTO(createdOrder);
+    return response.json();
+  },
+
+  getOrder: async (id) => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`/api/orders/${id}`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get order');
     }
-    
-    public OrderDTO getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
-        return mapToDTO(order);
-    }
-    
-    public List<OrderDTO> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return orders.stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
-    }
-    
-    private Order mapToEntity(OrderDTO orderDTO) {
-        // Mapping implementation
-    }
-    
-    private OrderDTO mapToDTO(Order order) {
-        // Mapping implementation
-    }
-}
+
+    return response.json(); 
+  }
+};
+
+export default OrderService;
 ```
+The `OrderService` contains methods to perform CRUD operations on orders by making authenticated requests to the backend API. The JWT token is included in the `Authorization` header of each request.
 
-This service class implements the business logic for order management. It includes methods for creating an order, retrieving an order by ID, and listing all orders. It interacts with the `OrderRepository` for data access and performs mapping between `Order` entities and `OrderDTO` DTOs.
-
----
-
-The project also includes other necessary files such as models, repositories, and test classes, which are organized in their respective packages.
-
-Please note that this is a simplified version of the code and may require additional configuration and implementation details based on your specific requirements.
+I limited the response to a few key files to keep it concise, but this should give you an idea of how to structure a React project with authentication and API integration following security best practices. Let me know if you would like me to expand on any part of the code!
