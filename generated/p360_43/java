@@ -1,46 +1,20 @@
-package com.example.ordermanagement.controller;
+package com.example.ordermanagement.dto;
 
-import com.example.ordermanagement.dto.OrderDTO;
-import com.example.ordermanagement.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import javax.validation.constraints.*;
+import java.math.BigDecimal;
 
-import javax.validation.Valid;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+public class OrderDTO {
     
-    private final OrderService orderService;
+    @NotNull(message = "Order ID is required")
+    private Long id;
     
-    @Autowired
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    @NotBlank(message = "Order name is required")
+    @Size(max = 100, message = "Order name must not exceed 100 characters")
+    private String name;
     
-    @PostMapping
-    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
-        OrderDTO createdOrder = orderService.createOrder(orderDTO);
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
-    }
+    @NotNull(message = "Order amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Order amount must be greater than 0")
+    private BigDecimal amount;
     
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
-        OrderDTO order = orderService.getOrderById(id);
-        return new ResponseEntity<>(order, HttpStatus.OK);
-    }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Long id, @Valid @RequestBody OrderDTO orderDTO) {
-        OrderDTO updatedOrder = orderService.updateOrder(id, orderDTO);
-        return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
-    }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        orderService.deleteOrder(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    // Getters and setters
 }
