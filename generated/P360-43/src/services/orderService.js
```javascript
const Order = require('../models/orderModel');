@@ -1,0 +1,14 @@
+exports.createOrder = async (orderData) => {
+  const order = new Order(orderData);
+  await order.save();
+  return order;
+};
+
+exports.getOrders = async () => {
+  const orders = await Order.find();
+  return orders;
+};
+
+// Other order service methods...
+```
+Description: Contains the business logic for order-related operations, interacting with the order data model.
