@@ -1,8 +1,9 @@
-class AuthenticationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'AuthenticationError';
-  }
-}
+const Joi = require('joi');
 
-module.exports = AuthenticationError;
+exports.createOrder = {
+  body: Joi.object({
+    // Order validation schema...
+  }),
+};
+
+// Other order validation schemas...
