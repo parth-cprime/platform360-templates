@@ -1,35 +1,41 @@
-const Joi = require('joi');
+// Simulated data store
+let orders = [];
 
-const orderSchema = Joi.object({
-  customerName: Joi.string().required(),
-  email: Joi.string().email().required(),
-  total: Joi.number().positive().required(),
-  items: Joi.array().items(
-    Joi.object({
-      productId: Joi.string().required(),
-      quantity: Joi.number().integer().positive().required(),
-      price: Joi.number().positive().required(),
-    })
-  ).required(),
-});
+const createOrder = async (orderData) => {
+  const order = {
+    id: generateOrderId(),
+    ...orderData,
+    createdAt: new Date(),
+  };
+  orders.push(order);
+  return order;
+};
 
-const createOrderSchema = orderSchema;
+const getOrderById = async (orderId) => {
+  return orders.find((order) => order.id === orderId);
+};
 
-const updateOrderSchema = Joi.object({
-  customerName: Joi.string(),
-  email: Joi.string().email(),
-  total: Joi.number().positive(),
-  items: Joi.array().items(
-    Joi.object({
-      productId: Joi.string(),
-      quantity: Joi.number().integer().positive(),
-      price: Joi.number().positive(),
-    })
-  ),
-});
+const updateOrder = async (orderId, updateData) => {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    return null;
+  }
+  Object.assign(order, updateData);
+  return order;
+};
+
+const deleteOrder = async (orderId) => {
+  orders = orders.filter((order) => order.id !== orderId);
+};
+
+const generateOrderId = () => {
+  // Generate a unique order ID
+  return Math.random().toString(36).substr(2, 9);
+};
 
 module.exports = {
-  orderSchema,
-  createOrderSchema,
-  updateOrderSchema,
+  createOrder,
+  getOrderById,
+  updateOrder,
+  deleteOrder,
 };
