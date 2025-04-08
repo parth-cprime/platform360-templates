@@ -1,20 +1,9 @@
-const jwt = require('jsonwebtoken');
-const config = require('../../config/jwtConfig');
-
-const authMiddleware = (req, res, next) => {
-  const token = req.headers['authorization'];
-
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
+const validationMiddleware = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
   }
-
-  jwt.verify(token, config.secret, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    req.userId = decoded.userId;
-    next();
-  });
+  next();
 };
 
-module.exports = authMiddleware;
+module.exports = validationMiddleware;
