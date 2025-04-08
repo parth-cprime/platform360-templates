@@ -1,20 +1,21 @@
-const dotenv = require('dotenv');
-dotenv.config();
+const orderService = require('../services/orderService');
 
-module.exports = {
-  port: process.env.PORT || 3000,
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: '1h',
-    algorithm: 'HS256',
-  },
-  rateLimit: {
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-  },
-  cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-  },
+exports.createOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.createOrder(req.body);
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
 };
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await orderService.getOrders();
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Other order controller methods...
