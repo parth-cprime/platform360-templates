@@ -1,21 +1,50 @@
 const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const orderRoutes = require('./controllers/orderController');
-const authMiddleware = require('./utils/authMiddleware');
-const errorHandler = require('./utils/errorHandler');
-const securityConfig = require('../config/securityConfig');
+const orderService = require('../services/orderService');
+const validationMiddleware = require('../utils/validationMiddleware');
+const { createOrderSchema, updateOrderSchema } = require('../models/orderModel');
 
-const app = express();
+const router = express.Router();
 
-app.use(helmet(securityConfig.helmet));
-app.use(rateLimit(securityConfig.rateLimit));
-app.use(cors(securityConfig.cors));
-app.use(express.json());
+router.post('/', validationMiddleware(createOrderSchema), async (req, res, next) => {
+  try {
+    const order = await orderService.createOrder(req.body);
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+});
 
-app.use('/api/orders', authMiddleware, orderRoutes);
+router.get('/:id', async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+});
 
-app.use(errorHandler);
+router.put('/:id', validationMiddleware(updateOrderSchema), async (req, res, next) => {
+  try {
+    const order = await orderService.updateOrder(req.params.id, req.body);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+});
 
-module.exports = app;
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await orderService.deleteOrder(req.params.id);
+    res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
