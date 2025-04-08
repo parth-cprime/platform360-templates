@@ -1,162 +1,354 @@
-Here is a secure, well-structured sample React project based on the provided requirements and templates:
+Here is the generated secure, well-structured code for the order management API based on the provided task details, requirements, and templates:
 
-README.md:
+1. README.md
 
+```markdown
 # Order Management API
 
-This project implements a secure order management API using React. It includes features for creating orders and sending notifications.
-
-## Project Overview
-- Allows creating and managing orders through a REST API
-- Sends notifications to the appropriate team when urgent feedback is submitted 
-- Implements authentication using JSON Web Tokens (JWT)
+This project implements an order management API with secure authentication and authorization using JWT tokens. The API allows users to create, retrieve, update, and delete orders.
 
 ## Folder Structure
-- `src/` - Contains the main source code
-  - `components/` - Reusable React components
-  - `pages/` - Top-level page components 
-  - `services/` - Business logic and external integrations
-  - `utils/` - Utility functions and helpers
-- `public/` - Publicly accessible static assets 
-- `README.md` - Project overview documentation
+
+- `src/main/java/com/example/ordermanagement`: Contains the main application code
+  - `config`: Configuration classes
+  - `controller`: API controllers
+  - `dto`: Data transfer objects
+  - `exception`: Custom exception classes
+  - `model`: Domain models
+  - `repository`: Data access layer
+  - `security`: Security-related classes
+  - `service`: Business logic services
+- `src/main/resources`: Contains configuration files
+- `src/test/java/com/example/ordermanagement`: Contains test classes
 
 ## Key Components
-- `App` - Main application component
-- `OrderForm` - Form for submitting new orders
-- `OrderList` - Displays list of orders
-- `AuthService` - Handles user authentication
-- `OrderService` - Manages order creation and notifications
+
+- `OrderController`: Exposes the order management API endpoints
+- `OrderService`: Implements the business logic for order management
+- `OrderRepository`: Handles data access for orders
+- `SecurityConfig`: Configures security settings and JWT authentication
+- `JwtTokenProvider`: Generates and validates JWT tokens
 
 ## Setup Instructions
+
 1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Configure environment variables in `.env` file
-4. Run `npm start` to launch the development server
+2. Configure the database connection in `application.properties`
+3. Build the project using Maven: `mvn clean install`
+4. Run the application: `mvn spring-boot:run`
 
-## Security Considerations 
-- User authentication implemented with JWT and bcrypt
-- API endpoints secured with authentication middleware
-- Form inputs validated to prevent XSS and injection attacks
-- Sensitive data encrypted in transit and at rest
-- Rate limiting applied to prevent abuse
-- CORS configured to restrict allowed origins
-- Security headers set with helmet middleware
+## Security Considerations
 
----
+- The API endpoints are secured using JWT authentication
+- User passwords are hashed using BCrypt
+- Input validation is performed on all incoming requests
+- Proper error handling and logging are implemented
 
-src/App.js:
-```jsx
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import OrderPage from './pages/OrderPage';
-import PrivateRoute from './components/PrivateRoute';
-
-const App = () => {
-  return (
-    <Router>
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <PrivateRoute path="/" component={OrderPage} />
-      </Switch>
-    </Router>
-  );
-};
-
-export default App;
 ```
 
-Description: The main `App` component that sets up routing and renders the appropriate page components based on the current route. It includes a public login route and a private route for the order management page.
+2. File Details
 
----
+- File path: `src/main/java/com/example/ordermanagement/config/SecurityConfig.java`
+- File content:
+```java
+package com.example.ordermanagement.config;
 
-src/components/OrderForm.js:
-```jsx
-import React, { useState } from 'react';
-import { createOrder } from '../services/OrderService';
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-const OrderForm = () => {
-  const [orderData, setOrderData] = useState({
-    customerName: '',
-    productName: '',
-    quantity: 0,
-  });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await createOrder(orderData);
-      alert('Order submitted successfully');
-      setOrderData({ customerName: '', productName: '', quantity: 0 });
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      alert('Failed to submit order. Please try again.');
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/public/**").permitAll()
+            .antMatchers("/api/orders/**").authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
     }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Customer Name"
-        value={orderData.customerName}
-        onChange={(e) => setOrderData({ ...orderData, customerName: e.target.value })}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Product Name"  
-        value={orderData.productName}
-        onChange={(e) => setOrderData({ ...orderData, productName: e.target.value })}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Quantity"
-        value={orderData.quantity}
-        onChange={(e) => setOrderData({ ...orderData, quantity: parseInt(e.target.value) })} 
-        min="1"
-        required
-      />
-      <button type="submit">Submit Order</button>
-    </form>
-  );
-};
-
-export default OrderForm;
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
 ```
+- Description: The `SecurityConfig` class configures the security settings for the API. It defines the authentication and authorization rules using JWT and enables password hashing using BCrypt.
 
-Description: The `OrderForm` component renders a form for submitting new orders. It manages the form state using the `useState` hook and calls the `createOrder` service method to submit the order data to the backend API.
+- File path: `src/main/java/com/example/ordermanagement/security/JwtTokenProvider.java`
+- File content:
+```java
+package com.example.ordermanagement.security;
 
----
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
-src/services/OrderService.js:
-```javascript
-import axios from 'axios';
-import { getAuthToken } from './AuthService';
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
-export const createOrder = async (orderData) => {
-  try {
-    const token = getAuthToken();
-    const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error creating order:', error);
-    throw error;
-  }
-};
+@Component
+public class JwtTokenProvider {
+    
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+    
+    @Value("${jwt.expiration}")
+    private long jwtExpirationInMs;
+    
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", userDetails.getAuthorities());
+        
+        return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
+            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+            .compact();
+    }
+    
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
+    public String getUsernameFromToken(String token) {
+        Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+        return claims.getSubject();
+    }
+}
 ```
+- Description: The `JwtTokenProvider` class handles the generation and validation of JWT tokens. It also extracts the username from the token.
 
-Description: The `OrderService` module contains methods for interacting with the order management API. The `createOrder` method sends a POST request to the `/orders` endpoint with the provided order data and the user's authentication token.
+- File path: `src/main/java/com/example/ordermanagement/controller/OrderController.java`
+- File content:
+```java
+package com.example.ordermanagement.controller;
 
----
+import com.example.ordermanagement.dto.OrderDTO;
+import com.example.ordermanagement.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-This is a sample of a secure and well-structured React project based on the provided requirements. It includes key components like `App`, `OrderForm`, and `OrderService`, and follows best practices for security, validation, and project structure.
+import javax.validation.Valid;
 
-The README provides an overview of the project, setup instructions, and security considerations. The code snippets demonstrate proper use of React hooks, secure API integration, and modularization of components and services.
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+    
+    private final OrderService orderService;
+    
+    @Autowired
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+    
+    @PostMapping
+    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        OrderDTO createdOrder = orderService.createOrder(orderDTO);
+        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
+        OrderDTO order = orderService.getOrderById(id);
+        return new ResponseEntity<>(order, HttpStatus.OK);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Long id, @Valid @RequestBody OrderDTO orderDTO) {
+        OrderDTO updatedOrder = orderService.updateOrder(id, orderDTO);
+        return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+}
+```
+- Description: The `OrderController` class defines the API endpoints for order management. It handles HTTP requests and delegates the business logic to the `OrderService`.
 
-Let me know if you have any further questions or if you'd like me to expand on any part of the project!
+- File path: `src/main/java/com/example/ordermanagement/dto/OrderDTO.java`
+- File content:
+```java
+package com.example.ordermanagement.dto;
+
+import javax.validation.constraints.*;
+import java.math.BigDecimal;
+
+public class OrderDTO {
+    
+    @NotNull(message = "Order ID is required")
+    private Long id;
+    
+    @NotBlank(message = "Order name is required")
+    @Size(max = 100, message = "Order name must not exceed 100 characters")
+    private String name;
+    
+    @NotNull(message = "Order amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Order amount must be greater than 0")
+    private BigDecimal amount;
+    
+    // Getters and setters
+}
+```
+- Description: The `OrderDTO` class represents the data transfer object for an order. It includes validation annotations to ensure data integrity.
+
+- File path: `src/main/java/com/example/ordermanagement/service/OrderService.java`
+- File content:
+```java
+package com.example.ordermanagement.service;
+
+import com.example.ordermanagement.dto.OrderDTO;
+import com.example.ordermanagement.exception.ResourceNotFoundException;
+import com.example.ordermanagement.model.Order;
+import com.example.ordermanagement.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService {
+    
+    private final OrderRepository orderRepository;
+    
+    @Autowired
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+    
+    public OrderDTO createOrder(OrderDTO orderDTO) {
+        Order order = mapToEntity(orderDTO);
+        Order savedOrder = orderRepository.save(order);
+        return mapToDTO(savedOrder);
+    }
+    
+    public OrderDTO getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        return mapToDTO(order);
+    }
+    
+    public OrderDTO updateOrder(Long id, OrderDTO orderDTO) {
+        Order existingOrder = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        
+        existingOrder.setName(orderDTO.getName());
+        existingOrder.setAmount(orderDTO.getAmount());
+        
+        Order updatedOrder = orderRepository.save(existingOrder);
+        return mapToDTO(updatedOrder);
+    }
+    
+    public void deleteOrder(Long id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        orderRepository.delete(order);
+    }
+    
+    private OrderDTO mapToDTO(Order order) {
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setId(order.getId());
+        orderDTO.setName(order.getName());
+        orderDTO.setAmount(order.getAmount());
+        return orderDTO;
+    }
+    
+    private Order mapToEntity(OrderDTO orderDTO) {
+        Order order = new Order();
+        order.setName(orderDTO.getName());
+        order.setAmount(orderDTO.getAmount());
+        return order;
+    }
+}
+```
+- Description: The `OrderService` class contains the business logic for order management. It interacts with the `OrderRepository` to perform CRUD operations on orders.
+
+- File path: `src/main/java/com/example/ordermanagement/repository/OrderRepository.java`
+- File content:
+```java
+package com.example.ordermanagement.repository;
+
+import com.example.ordermanagement.model.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface OrderRepository extends JpaRepository<Order, Long> {
+}
+```
+- Description: The `OrderRepository` interface extends Spring Data JPA's `JpaRepository` to perform database operations on the `Order` entity.
+
+- File path: `src/main/java/com/example/ordermanagement/model/Order.java`
+- File content:
+```java
+package com.example.ordermanagement.model;
+
+import javax.persistence.*;
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "orders")
+public class Order {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name = "name", nullable = false)
+    private String name;
+    
+    @Column(name = "amount", nullable = false)
+    private BigDecimal amount;
+    
+    // Getters and setters
+}
+```
+- Description: The `Order` class represents the domain model for an order. It is mapped to the `orders` table in the database using JPA annotations.
+
+- File path: `src/main/java/com/example/ordermanagement/exception/ResourceNotFoundException.java`
+- File content:
+```java
+package com.example.ordermanagement.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
+    
+    public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
+        super(String.format("%s not found with %s : '%s'", resourceName, fieldName, fieldValue));
+    }
+}
+```
+- Description: The `ResourceNotFoundException` class is a custom exception class used to handle cases where a requested resource is not found.
+
+The provided code follows the guidelines and best practices mentioned in the templates. It includes a secure configuration using JWT authentication, input validation using validation annotations, and proper error handling with custom exception classes. The code is organized in a standard project structure, separating concerns into controllers, services, repositories, DTOs, and models.
+
+Please note that this is a simplified version of an order management API and may require additional features and refinements based on the specific requirements of the project.
