@@ -1,34 +1,20 @@
-import axios from 'axios';
-import { getToken } from './authService';
+import Joi from 'joi';
 
-const api = axios.create({
-  baseURL: process.env.API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const orderSchema = Joi.object({
+  customerName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  // Define other order fields
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+export const validateOrder = (orderData) => {
+  const { error } = orderSchema.validate(orderData);
+  
+  if (error) {
+    return {
+      errors: error.details.map((detail) => detail.message),
+      isValid: false,
+    };
   }
-);
-
-export const createOrder = (orderData) => {
-  return api.post('/orders', orderData);
-};
-
-export const getOrders = () => {
-  return api.get('/orders');
-};
-
-export const getOrderDetails = (orderId) => {
-  return api.get(`/orders/${orderId}`);
+  
+  return { errors: [], isValid: true };
 };
