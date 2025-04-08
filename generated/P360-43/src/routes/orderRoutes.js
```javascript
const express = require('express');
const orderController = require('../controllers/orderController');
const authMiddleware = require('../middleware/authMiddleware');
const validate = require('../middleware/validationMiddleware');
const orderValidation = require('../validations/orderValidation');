@@ -1,0 +1,16 @@
+const router = express.Router();
+
+router.post(
+  '/',
+  authMiddleware,
+  validate(orderValidation.createOrder),
+  orderController.createOrder
+);
+
+router.get('/', authMiddleware, orderController.getOrders);
+
+// Other order routes...
+
+module.exports = router;
+```
+Description: Defines the order-related API routes and applies middleware such as authentication and validation.
