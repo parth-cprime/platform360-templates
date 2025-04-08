@@ -1,7 +1,20 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const orderController = require('../controllers/orderController');
+const authMiddleware = require('../middleware/authMiddleware');
+const validate = require('../middleware/validationMiddleware');
+const orderValidation = require('../validations/orderValidation');
 
-const orderSchema = new mongoose.Schema({
-  // Order schema definition...
-});
+const router = express.Router();
 
-module.exports = mongoose.model('Order', orderSchema);
+router.post(
+  '/',
+  authMiddleware,
+  validate(orderValidation.createOrder),
+  orderController.createOrder
+);
+
+router.get('/', authMiddleware, orderController.getOrders);
+
+// Other order routes...
+
+module.exports = router;
