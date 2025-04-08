@@ -1,19 +1,7 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const AuthenticationError = require('../utils/AuthenticationError');
+const mongoose = require('mongoose');
 
-module.exports = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+const orderSchema = new mongoose.Schema({
+  // Order schema definition...
+});
 
-  if (!token) {
-    throw new AuthenticationError('No token provided');
-  }
-
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    throw new AuthenticationError('Invalid token');
-  }
-};
+module.exports = mongoose.model('Order', orderSchema);
