@@ -1,9 +1,21 @@
-const Joi = require('joi');
+const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+const orderRoutes = require('./controllers/orderController');
+const authMiddleware = require('./utils/authMiddleware');
+const errorHandler = require('./utils/errorHandler');
+const securityConfig = require('../config/securityConfig');
 
-exports.createOrder = {
-  body: Joi.object({
-    // Order validation schema...
-  }),
-};
+const app = express();
 
-// Other order validation schemas...
+app.use(helmet(securityConfig.helmet));
+app.use(rateLimit(securityConfig.rateLimit));
+app.use(cors(securityConfig.cors));
+app.use(express.json());
+
+app.use('/api/orders', authMiddleware, orderRoutes);
+
+app.use(errorHandler);
+
+module.exports = app;
