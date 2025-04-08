@@ -1,20 +1,14 @@
-const express = require('express');
-const orderController = require('../controllers/orderController');
-const authMiddleware = require('../middleware/authMiddleware');
-const validate = require('../middleware/validationMiddleware');
-const orderValidation = require('../validations/orderValidation');
+const Order = require('../models/orderModel');
 
-const router = express.Router();
+exports.createOrder = async (orderData) => {
+  const order = new Order(orderData);
+  await order.save();
+  return order;
+};
 
-router.post(
-  '/',
-  authMiddleware,
-  validate(orderValidation.createOrder),
-  orderController.createOrder
-);
+exports.getOrders = async () => {
+  const orders = await Order.find();
+  return orders;
+};
 
-router.get('/', authMiddleware, orderController.getOrders);
-
-// Other order routes...
-
-module.exports = router;
+// Other order service methods...
