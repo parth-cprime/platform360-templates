@@ -1,45 +1,40 @@
 # Order Management API
 
-This project implements an Order Management API using Node.js. It provides endpoints for managing orders and includes security features such as JWT authentication, rate limiting, and input validation.
+This project implements an order management API with secure authentication and authorization using JWT tokens. The API allows users to create, retrieve, update, and delete orders.
 
 ## Folder Structure
 
-- `src/`: Contains the main source code
-  - `controllers/`: API route handlers
-  - `middlewares/`: Custom middleware functions
-  - `models/`: Data models and schemas
-  - `routes/`: API route definitions
-  - `services/`: Business logic and data access
-  - `utils/`: Utility functions
-  - `app.js`: Main application entry point
-  - `config.js`: Configuration settings
-- `tests/`: Contains test files
-- `package.json`: Project dependencies and scripts
-- `.env`: Environment variables
+- `src/main/java/com/example/ordermanagement`: Contains the main application code
+  - `config`: Configuration classes
+  - `controller`: API controllers
+  - `dto`: Data transfer objects
+  - `exception`: Custom exception classes
+  - `model`: Domain models
+  - `repository`: Data access layer
+  - `security`: Security-related classes
+  - `service`: Business logic services
+- `src/main/resources`: Contains configuration files
+- `src/test/java/com/example/ordermanagement`: Contains test classes
 
 ## Key Components
 
-- `app.js`: Sets up the Express application, middleware, and routes
-- `controllers/`: Defines the API route handlers
-- `middlewares/`: Implements custom middleware for authentication, error handling, etc.
-- `models/`: Defines the data models and schemas using Mongoose
-- `routes/`: Defines the API routes and maps them to the corresponding controllers
-- `services/`: Contains the business logic and data access functions
-- `utils/`: Provides utility functions for tasks like password hashing and token generation
+- `OrderController`: Exposes the order management API endpoints
+- `OrderService`: Implements the business logic for order management
+- `OrderRepository`: Handles data access for orders
+- `SecurityConfig`: Configures security settings and JWT authentication
+- `JwtTokenProvider`: Generates and validates JWT tokens
 
 ## Setup Instructions
 
 1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env` file
-4. Start the server: `npm start`
-5. Run tests: `npm test`
+2. Configure the database connection in `application.properties`
+3. Build the project using Maven: `mvn clean install`
+4. Run the application: `mvn spring-boot:run`
 
 ## Security Considerations
 
-- JWT authentication is used to secure the API endpoints
-- Rate limiting middleware is implemented to prevent abuse
-- Input validation is performed using Joi schemas
-- Passwords are hashed using bcrypt before storing them in the database
-- CORS is configured to restrict access to allowed origins
-- Helmet middleware is used to add security headers
+- The API endpoints are secured using JWT authentication
+- User passwords are hashed using BCrypt
+- Input validation is performed on all incoming requests
+- Proper error handling and logging are implemented
+
