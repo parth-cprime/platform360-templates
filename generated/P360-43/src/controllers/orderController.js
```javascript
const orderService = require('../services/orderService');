@@ -1,0 +1,21 @@
+exports.createOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.createOrder(req.body);
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await orderService.getOrders();
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Other order controller methods...
+```
+Description: Defines the order controller methods that handle the API route logic for order-related operations.
