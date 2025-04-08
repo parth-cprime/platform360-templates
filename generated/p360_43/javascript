@@ -1,14 +1,8 @@
-const Order = require('../models/orderModel');
+class AuthenticationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
 
-exports.createOrder = async (orderData) => {
-  const order = new Order(orderData);
-  await order.save();
-  return order;
-};
-
-exports.getOrders = async () => {
-  const orders = await Order.find();
-  return orders;
-};
-
-// Other order service methods...
+module.exports = AuthenticationError;
