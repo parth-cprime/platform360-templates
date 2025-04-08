@@ -1,6 +1,22 @@
-const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
+module.exports = {
+  helmet: {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  },
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
 };
-
-module.exports = errorHandler;
