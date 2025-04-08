@@ -1,20 +1,63 @@
-package com.example.ordermanagement.dto;
+package com.example.ordermanagement.service;
 
-import javax.validation.constraints.*;
-import java.math.BigDecimal;
+import com.example.ordermanagement.dto.OrderDTO;
+import com.example.ordermanagement.exception.ResourceNotFoundException;
+import com.example.ordermanagement.model.Order;
+import com.example.ordermanagement.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class OrderDTO {
+@Service
+public class OrderService {
     
-    @NotNull(message = "Order ID is required")
-    private Long id;
+    private final OrderRepository orderRepository;
     
-    @NotBlank(message = "Order name is required")
-    @Size(max = 100, message = "Order name must not exceed 100 characters")
-    private String name;
+    @Autowired
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
     
-    @NotNull(message = "Order amount is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Order amount must be greater than 0")
-    private BigDecimal amount;
+    public OrderDTO createOrder(OrderDTO orderDTO) {
+        Order order = mapToEntity(orderDTO);
+        Order savedOrder = orderRepository.save(order);
+        return mapToDTO(savedOrder);
+    }
     
-    // Getters and setters
+    public OrderDTO getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        return mapToDTO(order);
+    }
+    
+    public OrderDTO updateOrder(Long id, OrderDTO orderDTO) {
+        Order existingOrder = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        
+        existingOrder.setName(orderDTO.getName());
+        existingOrder.setAmount(orderDTO.getAmount());
+        
+        Order updatedOrder = orderRepository.save(existingOrder);
+        return mapToDTO(updatedOrder);
+    }
+    
+    public void deleteOrder(Long id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        orderRepository.delete(order);
+    }
+    
+    private OrderDTO mapToDTO(Order order) {
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setId(order.getId());
+        orderDTO.setName(order.getName());
+        orderDTO.setAmount(order.getAmount());
+        return orderDTO;
+    }
+    
+    private Order mapToEntity(OrderDTO orderDTO) {
+        Order order = new Order();
+        order.setName(orderDTO.getName());
+        order.setAmount(orderDTO.getAmount());
+        return order;
+    }
 }
