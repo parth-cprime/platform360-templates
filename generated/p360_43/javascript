@@ -1,20 +1,22 @@
-import Joi from 'joi';
-
-const orderSchema = Joi.object({
-  customerName: Joi.string().required(),
-  email: Joi.string().email().required(),
-  // Define other order fields
-});
-
-export const validateOrder = (orderData) => {
-  const { error } = orderSchema.validate(orderData);
-  
-  if (error) {
-    return {
-      errors: error.details.map((detail) => detail.message),
-      isValid: false,
-    };
-  }
-  
-  return { errors: [], isValid: true };
+export const securityConfig = {
+  helmet: {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  },
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
 };
