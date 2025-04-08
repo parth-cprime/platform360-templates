@@ -1,0 +1,3 @@
+module.exports = AuthenticationError;
+```
+Description: Custom error class for authentication-related errors.
