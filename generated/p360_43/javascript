@@ -1,22 +1,30 @@
-export const securityConfig = {
-  helmet: {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-      },
-    },
-  },
-  rateLimit: {
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-  },
-  cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-  },
-};
+const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+const morgan = require('morgan');
+const config = require('./config');
+const routes = require('./routes');
+const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+
+// Security middleware
+app.use(helmet());
+app.use(rateLimit(config.rateLimit));
+app.use(cors(config.cors));
+
+// Logging middleware
+app.use(morgan('combined'));
+
+// Parse request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// API routes
+app.use('/api', routes);
+
+// Error handling middleware
+app.use(errorHandler);
+
+module.exports = app;
