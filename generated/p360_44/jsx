@@ -1,0 +1,69 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import jwt from 'jsonwebtoken';
+
+const MarketingPage = () => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+
+      // Generate JWT token for secure data transmission
+      const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      // Send lead data to server securely
+      await axios.post('/api/leads', { email }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Clear form and show success message
+      setEmail('');
+      setError('');
+      alert('Thank you for your interest! We will be in touch soon.');
+    } catch (err) {
+      setError('An error occurred. Please try again later.');
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="marketing-page">
+      <h1>[Product/Service Name]</h1>
+      <p>Compelling value proposition goes here...</p>
+
+      <h2>Key Benefits</h2>
+      <ul>
+        <li>Benefit 1</li>
+        <li>Benefit 2</li>
+        <li>Benefit 3</li>
+      </ul>
+
+      <h2>Get Started</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="email">Enter your email:</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        {error && <p className="error">{error}</p>}
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
+  );
+};
+
+export default MarketingPage;
