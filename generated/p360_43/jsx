@@ -1,34 +1,21 @@
-import React, { useState } from 'react';
-import { createOrder } from '../services/api';
-import { validateOrder } from '../utils/validation';
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import OrderList from './pages/OrderList';
+import OrderDetails from './pages/OrderDetails';
+import OrderForm from './pages/OrderForm';
+import PrivateRoute from './components/PrivateRoute';
 
-const OrderForm = () => {
-  const [orderData, setOrderData] = useState({});
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const { errors, isValid } = validateOrder(orderData);
-    
-    if (!isValid) {
-      // Handle validation errors
-      return;
-    }
-    
-    try {
-      await createOrder(orderData);
-      // Clear form data on successful submission
-      setOrderData({});
-    } catch (error) {
-      // Handle API errors
-    }
-  };
-
+function App() {
   return (
-    <form onSubmit={handleSubmit}>
-      {/* Render form fields */}
-    </form>
+    <Router>
+      <Switch>
+        <PrivateRoute exact path="/" component={OrderList} />
+        <PrivateRoute path="/orders/:id" component={OrderDetails} />
+        <PrivateRoute path="/orders/new" component={OrderForm} />
+        <Route path="/login" component={Login} />
+      </Switch>
+    </Router>
   );
-};
+}
 
-export default OrderForm;
+export default App;
