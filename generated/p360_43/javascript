@@ -1,13 +1,7 @@
-const Order = require('../models/Order');
+const winston = require('winston');
 
-class OrderService {
-  async createOrder(orderData) {
-    const order = new Order(orderData);
-    await order.save();
-    return order;
-  }
+const logger = winston.createLogger({
+  // Logger configuration...
+});
 
-  // Other order-related business logic...
-}
-
-module.exports = new OrderService();
+module.exports = logger;
