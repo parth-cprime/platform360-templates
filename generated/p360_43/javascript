@@ -1,26 +1,16 @@
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-
-const config = require('./config');
-const routes = require('./routes');
-const ErrorHandler = require('./middlewares/ErrorHandler');
-
-const app = express();
-
-// Security middleware
-app.use(helmet());
-app.use(rateLimit(config.rateLimit));
-app.use(cors(config.cors));
-
-// Parse request bodies
-app.use(express.json());
-
-// API routes
-app.use('/api', routes);
-
-// Error handling middleware
-app.use(ErrorHandler);
-
-module.exports = app;
+module.exports = {
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: '1h',
+    algorithm: 'HS256',
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  },
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || [],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
+};
