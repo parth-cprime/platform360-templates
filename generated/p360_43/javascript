@@ -1,21 +1,26 @@
-const Joi = require('joi');
+const logger = require('../utils/logger');
 
-class ValidationError extends Error {
-  constructor(message, details) {
-    super(message);
-    this.name = 'ValidationError';
-    this.details = details;
-  }
-}
+const ErrorHandler = (err, req, res, next) => {
+  logger.error(err.stack);
 
-const ValidationMiddleware = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body);
-
-  if (error) {
-    throw new ValidationError('Validation failed', error.details);
+  if (err instanceof ValidationError) {
+    return res.status(400).json({
+      error: 'Validation Error',
+      details: err.details,
+    });
   }
 
-  next();
+  if (err instanceof AuthenticationError) {
+    return res.status(401).json({
+      error: 'Authentication Error',
+      message: err.message,
+    });
+  }
+
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'An unexpected error occurred',
+  });
 };
 
-module.exports = ValidationMiddleware;
+module.exports = ErrorHandler;
