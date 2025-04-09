@@ -1,0 +1,12 @@
+class OrderService {
+  async createOrder(orderData) {
+    const order = new Order(orderData);
+    await order.save();
+    return order;
+  }
+
+  // Other order-related business logic...
+}
+
+module.exports = new OrderService();
+```
