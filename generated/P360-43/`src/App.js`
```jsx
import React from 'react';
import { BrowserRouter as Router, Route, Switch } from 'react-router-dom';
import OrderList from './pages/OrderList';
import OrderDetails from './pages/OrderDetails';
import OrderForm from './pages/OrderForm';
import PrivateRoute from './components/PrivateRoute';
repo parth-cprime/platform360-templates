@@ -1,0 +1,16 @@
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <PrivateRoute exact path="/" component={OrderList} />
+        <PrivateRoute path="/orders/:id" component={OrderDetails} />
+        <PrivateRoute path="/orders/new" component={OrderForm} />
+        <Route path="/login" component={Login} />
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+```
+Description: The main application component that defines the routes and top-level structure.
