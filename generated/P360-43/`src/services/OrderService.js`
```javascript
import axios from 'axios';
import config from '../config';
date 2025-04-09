@@ -1,0 +1,43 @@
+class OrderService {
+  static async getOrders() {
+    const response = await axios.get(`${config.apiUrl}/orders`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  }
+
+  static async getOrder(id) {
+    const response = await axios.get(`${config.apiUrl}/orders/${id}`, { 
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  }
+
+  static async createOrder(order) {
+    const response = await axios.post(`${config.apiUrl}/orders`, order, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }  
+    });
+    return response.data;
+  }
+
+  static async updateOrder(id, order) {
+    const response = await axios.put(`${config.apiUrl}/orders/${id}`, order, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  }
+
+  static async deleteOrder(id) {
+    await axios.delete(`${config.apiUrl}/orders/${id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }
+}
+
+export default OrderService;
+```
+Description: Service class that provides methods for interacting with the backend API to manage orders. Includes authentication token in the request headers.
+
+The implementation covers key components like routing, authentication, order management, and follows the provided React code standards and security guidelines. The actual API endpoints and backend implementation are assumed to exist separately.
+
+Let me know if you have any further questions or if you'd like me to elaborate on any part of the implementation!
