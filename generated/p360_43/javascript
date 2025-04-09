@@ -1,26 +1,7 @@
-const logger = require('../utils/logger');
+const mongoose = require('mongoose');
 
-const ErrorHandler = (err, req, res, next) => {
-  logger.error(err.stack);
+const orderSchema = new mongoose.Schema({
+  // Order schema definition...
+});
 
-  if (err instanceof ValidationError) {
-    return res.status(400).json({
-      error: 'Validation Error',
-      details: err.details,
-    });
-  }
-
-  if (err instanceof AuthenticationError) {
-    return res.status(401).json({
-      error: 'Authentication Error',
-      message: err.message,
-    });
-  }
-
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'An unexpected error occurred',
-  });
-};
-
-module.exports = ErrorHandler;
+module.exports = mongoose.model('Order', orderSchema);
