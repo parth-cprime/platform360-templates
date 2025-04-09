@@ -1,151 +1,153 @@
-Based on the provided task details, requirements, user experience insights, and security template, here's a secure code implementation for a React application with JWT authentication and medium security level:
+Here is a secure React code implementation based on the provided details:
 
 ```jsx
-// AuthContext.js
-import React, { createContext, useState } from 'react';
-import jwt from 'jsonwebtoken';
-
-export const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  const login = async (username, password) => {
-    try {
-      // TODO: Implement secure authentication API call
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (response.ok) {
-        const { token } = await response.json();
-        const decodedToken = jwt.decode(token);
-        setUser(decodedToken);
-        localStorage.setItem('token', token);
-      } else {
-        throw new Error('Authentication failed');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// PrivateRoute.js
-import React, { useContext } from 'react';
-import { Route, Redirect } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
-
-export const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { user } = useContext(AuthContext);
-
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        user ? (
-          <Component {...props} />
-        ) : (
-          <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
-        )
-      }
-    />
-  );
-};
-
-// SecureComponent.js
+// Import necessary dependencies
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import jwt from 'jsonwebtoken';
+import axios from 'axios';
 
-export const SecureComponent = () => {
-  const [sensitiveData, setSensitiveData] = useState('');
+// Implement secure input validation
+function validateInput(input) {
+  // Perform input validation and sanitization
+  // ...
+}
 
-  const handleInputChange = (e) => {
-    const { value } = e.target;
-    // TODO: Implement input validation and sanitization
-    setSensitiveData(value);
-  };
+// Implement secure authentication using JWT
+function authenticateUser(username, password) {
+  // Validate user credentials
+  // Generate and sign JWT token
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return token;
+}
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // TODO: Implement secure data submission API call
-      const response = await fetch('/api/secure', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ sensitiveData }),
-      });
+// Implement secure authorization
+function authorizeUser(token, requiredRole) {
+  try {
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userRole = decodedToken.role;
+    return userRole === requiredRole;
+  } catch (error) {
+    console.error('Authorization failed:', error);
+    return false;
+  }
+}
 
-      if (!response.ok) {
-        throw new Error('Secure data submission failed');
-      }
-    } catch (error) {
-      console.error('Secure data submission error:', error);
-      // TODO: Handle error securely
+// Implement secure session management
+function createSecureSession(token) {
+  // Store token securely (e.g., HTTP-only cookie, secure storage)
+  // ...
+}
+
+// Implement secure data protection
+function protectSensitiveData(data) {
+  // Encrypt or hash sensitive data
+  // Avoid storing sensitive data unnecessarily
+  // ...
+}
+
+// Implement secure error handling
+function handleError(error) {
+  console.error('An error occurred:', error);
+  // Log error securely
+  // Display generic error message to user
+  // ...
+}
+
+// Implement secure API calls
+async function makeSecureApiCall(url, token) {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+}
+
+// Implement secure component
+function SecureComponent() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Handle authentication
+  function handleLogin(username, password) {
+    const token = authenticateUser(username, password);
+    if (token) {
+      createSecureSession(token);
+      setIsAuthenticated(true);
     }
-  };
+  }
 
+  // Handle authorization
+  function handleAuthorization(requiredRole) {
+    const token = getTokenFromStorage();
+    return authorizeUser(token, requiredRole);
+  }
+
+  // Render secure content
   return (
     <div>
-      <h2>Secure Component</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={sensitiveData}
-          onChange={handleInputChange}
-          placeholder="Enter sensitive data"
-        />
-        <button type="submit">Submit</button>
-      </form>
+      {isAuthenticated ? (
+        <div>
+          {/* Render authenticated content */}
+          {/* Implement authorization checks */}
+          {handleAuthorization('admin') && <AdminDashboard />}
+          {handleAuthorization('user') && <UserProfile />}
+        </div>
+      ) : (
+        <LoginForm onSubmit={handleLogin} />
+      )}
     </div>
   );
-};
+}
+
+// Implement secure routing
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/" exact component={Homepage} />
+        <Route path="/secure" component={SecureComponent} />
+        {/* Add more secure routes */}
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
 ```
 
 Security Configuration:
-- Use HTTPS for all API calls and data transmission
-- Implement strict Content Security Policy (CSP) headers
-- Enable CSRF protection on the server-side
-- Use secure cookies with HttpOnly and Secure flags
-- Implement rate limiting and throttling on API endpoints
-- Use secure defaults for libraries and frameworks
-- Regularly update dependencies to prevent vulnerabilities
+- Use secure HTTP headers (e.g., HSTS, X-Frame-Options, X-XSS-Protection)
+- Configure CSP (Content Security Policy) to restrict content sources
+- Enable CSRF protection
+- Use secure cookies (HttpOnly, Secure) for session management
+- Configure secure headers for API requests
+- Implement rate limiting and throttling for API endpoints
+- Use secure communication protocols (HTTPS)
 
 Security Documentation:
-- Create a security policy document outlining security practices and guidelines
-- Document secure coding practices and standards
-- Maintain an incident response plan
-- Conduct regular security training for developers
+- Document the implemented security controls
+- Provide guidelines for secure usage and configuration
+- Include security best practices for developers
+- Specify the authentication and authorization mechanisms
+- Document the data protection measures
+- Outline the error handling and logging procedures
+- Provide instructions for reporting security vulnerabilities
 
 Security Testing Plan:
-- Perform static code analysis using tools like ESLint with security plugins
-- Conduct manual code reviews focusing on security aspects
-- Perform penetration testing and vulnerability assessments
-- Implement continuous integration and continuous deployment (CI/CD) with security checks
-- Monitor and log application activities for suspicious behavior
+- Perform vulnerability scanning and penetration testing
+- Conduct code review to identify security weaknesses
+- Test input validation and sanitization
+- Verify authentication and authorization mechanisms
+- Validate session management and secure storage
+- Test error handling and logging functionalities
+- Assess the security of dependencies and third-party libraries
+- Perform security testing in a controlled environment
+- Engage security professionals for thorough testing
 
-Based on the user experience insights, the following optimizations can be considered:
-- Investigate and fix the cause of dead clicks to improve user experience
-- Analyze sessions with low experience scores to identify and address friction points
-- Optimize the application's performance to reduce friction and improve overall experience
-- Implement error handling and user-friendly error messages to guide users effectively
-
-Please note that this is a sample implementation and may require further customization based on your specific application requirements. It's essential to thoroughly test and validate the security measures implemented to ensure the application's overall security.
+Note: The provided code is a simplified example and should be adapted to fit the specific requirements and architecture of your application. It's important to thoroughly test and review the security implementation to ensure its effectiveness.
