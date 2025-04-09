@@ -1,38 +1,40 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import axios from 'axios';
 import config from '../config';
 
-class AuthService {
-  static async login(username, password) {
-    // Simulated user retrieval from database
-    const user = { 
-      id: 1,
-      username: 'admin',
-      password: '$2a$10$5Ck.6V7NubxK8v6WTiYiTO7sBRY6ZsTcngUa3rIe/qY4s2qDEE1Tm' // hashed password: 'password'
-    };
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error('Invalid username or password');
-    }
-
-    const token = jwt.sign({ sub: user.id }, config.jwtSecret);
-    return token;
+class OrderService {
+  static async getOrders() {
+    const response = await axios.get(`${config.apiUrl}/orders`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 
-  static isAuthenticated() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return false;
-    }
+  static async getOrder(id) {
+    const response = await axios.get(`${config.apiUrl}/orders/${id}`, { 
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  }
 
-    try {
-      jwt.verify(token, config.jwtSecret);
-      return true;
-    } catch (err) {
-      return false; 
-    }
+  static async createOrder(order) {
+    const response = await axios.post(`${config.apiUrl}/orders`, order, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }  
+    });
+    return response.data;
+  }
+
+  static async updateOrder(id, order) {
+    const response = await axios.put(`${config.apiUrl}/orders/${id}`, order, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  }
+
+  static async deleteOrder(id) {
+    await axios.delete(`${config.apiUrl}/orders/${id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
   }
 }
 
-export default AuthService;
+export default OrderService;
