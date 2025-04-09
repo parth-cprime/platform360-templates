@@ -1,35 +1,17 @@
-package com.example.ordermanagement.controller;
+package com.example.ordermanagement.dto;
 
-import com.example.ordermanagement.dto.OrderDTO;
-import com.example.ordermanagement.service.OrderService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+public class OrderDTO {
     
-    private final OrderService orderService;
+    private Long id;
     
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    @NotBlank(message = "Customer name is required")
+    private String customerName;
     
-    @PostMapping
-    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
-        OrderDTO createdOrder = orderService.createOrder(orderDTO);
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
-    }
+    @NotNull(message = "Total amount is required")
+    private Double totalAmount;
     
-    @GetMapping
-    public ResponseEntity<List<OrderDTO>> getAllOrders() {
-        List<OrderDTO> orders = orderService.getAllOrders();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
-    }
-    
-    // Other methods for retrieving, updating, and deleting orders
+    // Constructors, getters, and setters
 }
