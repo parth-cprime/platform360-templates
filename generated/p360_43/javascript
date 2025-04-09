@@ -1,16 +1,27 @@
-const OrderService = require('../services/OrderService');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-class OrderController {
-  async createOrder(req, res, next) {
-    try {
-      const order = await OrderService.createOrder(req.body);
-      res.status(201).json(order);
-    } catch (err) {
-      next(err);
-    }
+class AuthenticationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthenticationError';
   }
-
-  // Other order-related route handlers...
 }
 
-module.exports = new OrderController();
+const AuthMiddleware = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (!token) {
+    throw new AuthenticationError('No token provided');
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    throw new AuthenticationError('Invalid token');
+  }
+};
+
+module.exports = AuthMiddleware;
