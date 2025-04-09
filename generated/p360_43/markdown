@@ -1,40 +1,45 @@
 # Order Management API
 
-This project implements an Order Management API using React. It follows secure coding practices and implements features for managing orders.
-
-## Project Overview
-The Order Management API allows users to perform CRUD operations on orders. It includes authentication using JWT tokens and follows security best practices to protect sensitive data.
+This project implements an Order Management API that allows creating, retrieving, updating, and deleting orders. It follows Java best practices and includes security features such as JWT authentication and input validation.
 
 ## Folder Structure
-- `/src` - Contains the main source code files
-  - `/controllers` - Handles API endpoints and request processing
-  - `/models` - Defines data models and schemas
-  - `/services` - Implements business logic and data manipulation
-  - `/utils` - Contains utility functions and helpers
-- `/tests` - Contains test files for unit and integration testing
-- `/config` - Holds configuration files for the application
-- `/public` - Contains static assets and public files
+
+- `src/main/java`: Contains the Java source code
+  - `com.example.ordermanagement`: Root package
+    - `config`: Configuration classes
+    - `controller`: API controller classes
+    - `dto`: Data Transfer Object classes
+    - `exception`: Custom exception classes
+    - `model`: Domain model classes
+    - `repository`: Data access layer interfaces
+    - `security`: Security-related classes
+    - `service`: Business logic classes
+- `src/main/resources`: Contains application resources
+  - `application.properties`: Application configuration properties
+- `src/test/java`: Contains test classes
+  - `com.example.ordermanagement`: Test classes for each package
 
 ## Key Components
-- `app.js` - The main entry point of the application
-- `orderController.js` - Handles order-related API endpoints
-- `orderModel.js` - Defines the order data model and schema
-- `orderService.js` - Implements business logic for managing orders
-- `authMiddleware.js` - Middleware for authentication and authorization
-- `validationMiddleware.js` - Middleware for input validation
+
+- `OrderController`: Handles HTTP requests for order-related operations
+- `OrderService`: Implements the business logic for managing orders
+- `OrderRepository`: Defines the data access methods for orders
+- `SecurityConfig`: Configures security settings and authentication
+- `JwtTokenProvider`: Generates and validates JWT tokens
+- `GlobalExceptionHandler`: Handles exceptions and returns appropriate error responses
 
 ## Setup Instructions
-1. Clone the repository: `git clone <repository-url>`
-2. Install dependencies: `npm install`
-3. Configure environment variables in `.env` file
-4. Start the application: `npm start`
-5. Access the API endpoints at `http://localhost:3000`
+
+1. Clone the repository: `git clone https://github.com/example/order-management-api.git`
+2. Navigate to the project directory: `cd order-management-api`
+3. Build the project: `./mvnw clean install`
+4. Run the application: `./mvnw spring-boot:run`
+5. Access the API endpoints at `http://localhost:8080/api/orders`
 
 ## Security Considerations
-- Authentication is implemented using JWT tokens
-- Passwords are hashed using bcrypt before storing in the database
-- Input validation is performed using Joi library
-- API endpoints are protected with authentication middleware
-- Rate limiting is implemented to prevent abuse and protect against DoS attacks
-- CORS is configured to restrict access from allowed origins only
-- Sensitive data is not logged or exposed in error messages
+
+- The API uses JWT authentication to secure the endpoints. Only authenticated users with valid tokens can access protected resources.
+- User inputs are validated using validation annotations to prevent invalid or malicious data.
+- Passwords are hashed using BCrypt before storing them in the database.
+- The application follows SOLID principles and separates concerns into distinct layers.
+
