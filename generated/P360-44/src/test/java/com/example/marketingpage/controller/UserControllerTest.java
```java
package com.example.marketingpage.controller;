@@ -1,0 +1,40 @@
+import com.example.marketingpage.dto.UserDTO;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(UserController.class)
+public class UserControllerTest {
+    
+    @Autowired
+    private MockMvc mockMvc;
+    
+    @MockBean
+    private UserService userService;
+    
+    @Test
+    public void createUser_ValidInput_ReturnsOk() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("john");
+        userDTO.setPassword("password123");
+        userDTO.setEmail("john@example.com");
+        
+        mockMvc.perform(post("/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(userDTO)))
+            .andExpect(status().isOk());
+    }
+    
+    // Helper method to convert object to JSON string
+    private static String asJsonString(Object obj) {
+        // Implementation
+    }
+}
+```
+This test class contains unit tests for the `UserController`. It tests the `createUser` method with valid input and verifies that it returns an HTTP status code of 200 (OK).
