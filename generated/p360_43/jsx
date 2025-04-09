@@ -1,21 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import OrderList from './pages/OrderList';
-import OrderDetails from './pages/OrderDetails';
-import OrderForm from './pages/OrderForm';
-import PrivateRoute from './components/PrivateRoute';
+import { Route, Redirect } from 'react-router-dom';
+import AuthService from '../services/AuthService';
 
-function App() {
+function PrivateRoute({ component: Component, ...rest }) {
+  const isAuthenticated = AuthService.isAuthenticated();
+
   return (
-    <Router>
-      <Switch>
-        <PrivateRoute exact path="/" component={OrderList} />
-        <PrivateRoute path="/orders/:id" component={OrderDetails} />
-        <PrivateRoute path="/orders/new" component={OrderForm} />
-        <Route path="/login" component={Login} />
-      </Switch>
-    </Router>
+    <Route
+      {...rest}
+      render={props =>
+        isAuthenticated ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
+        )
+      }
+    />
   );
 }
 
-export default App;
+export default PrivateRoute;
