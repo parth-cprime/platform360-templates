@@ -1,7 +1,13 @@
-const mongoose = require('mongoose');
+const Order = require('../models/Order');
 
-const orderSchema = new mongoose.Schema({
-  // Order schema definition...
-});
+class OrderService {
+  async createOrder(orderData) {
+    const order = new Order(orderData);
+    await order.save();
+    return order;
+  }
 
-module.exports = mongoose.model('Order', orderSchema);
+  // Other order-related business logic...
+}
+
+module.exports = new OrderService();
