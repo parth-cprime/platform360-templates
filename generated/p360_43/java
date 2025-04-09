@@ -1,17 +1,33 @@
-package com.example.ordermanagement.dto;
+package com.example.ordermanagement.exception;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
-public class OrderDTO {
+import javax.validation.ValidationException;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
     
-    private Long id;
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Validation Error",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
     
-    @NotBlank(message = "Customer name is required")
-    private String customerName;
-    
-    @NotNull(message = "Total amount is required")
-    private Double totalAmount;
-    
-    // Constructors, getters, and setters
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Authentication Error",
+            ex.getMessage(),
+            HttpStatus.UNAUTHORIZED
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
 }
