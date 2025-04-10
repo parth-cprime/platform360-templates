@@ -1,0 +1,18 @@
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+public class FeedbackDTO {
+
+    @NotBlank(message = "Customer name is required")
+    private String customerName;
+
+    @NotBlank(message = "Feedback message is required")
+    @Size(max = 500, message = "Feedback message must not exceed 500 characters")
+    private String message;
+
+    private boolean urgent;
+
+    // Getters and setters
+}
+```
+Purpose: Defines the structure of the feedback data transfer object and applies validation constraints.
