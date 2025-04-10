@@ -1,0 +1,21 @@
+exports.createOrder = async (req, res, next) => {
+  try {
+    const { customerId, products } = req.body;
+    const order = await orderService.createOrder(customerId, products);
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getOrderById = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const order = await orderService.getOrderById(orderId);
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+```
+Description: The `orderController` handles incoming HTTP requests related to orders. It calls the appropriate service methods to perform the necessary business logic and sends the response back to the client.
