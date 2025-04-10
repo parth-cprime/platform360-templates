@@ -1,0 +1,9 @@
+exports.validateOrderInputs = (req, res, next) => {
+  const { error } = validateOrder(req.body);
+  if (error) {
+    throw new ValidationError(error.details);
+  }
+  next();
+};
+```
+Description: The `validationMiddleware` validates the request body against the defined validation schema. If the validation fails, it throws a `ValidationError` with the validation details. If the validation succeeds, it calls the next middleware.
