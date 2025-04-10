@@ -1,40 +1,11 @@
 import axios from 'axios';
-import config from '../config';
 
-class OrderService {
-  static async getOrders() {
-    const response = await axios.get(`${config.apiUrl}/orders`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    return response.data;
-  }
+const API_URL = process.env.REACT_APP_API_URL;
 
-  static async getOrder(id) {
-    const response = await axios.get(`${config.apiUrl}/orders/${id}`, { 
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    return response.data;
-  }
+const sendAlert = async (feedback) => {
+  return axios.post(`${API_URL}/alerts`, { feedback });
+};
 
-  static async createOrder(order) {
-    const response = await axios.post(`${config.apiUrl}/orders`, order, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }  
-    });
-    return response.data;
-  }
-
-  static async updateOrder(id, order) {
-    const response = await axios.put(`${config.apiUrl}/orders/${id}`, order, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    return response.data;
-  }
-
-  static async deleteOrder(id) {
-    await axios.delete(`${config.apiUrl}/orders/${id}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-  }
-}
-
-export default OrderService;
+export default {
+  sendAlert,
+};
