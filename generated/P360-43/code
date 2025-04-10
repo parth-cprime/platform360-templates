@@ -1,250 +1,167 @@
-Here is the generated code based on the provided task details, requirements, and templates:
+Based on the provided task details, requirements, user experience insights, and security template, here's a secure React code implementation that addresses the identified issues and incorporates the necessary security controls:
 
-README.md:
+```jsx
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { AuthProvider } from './AuthContext';
+import PrivateRoute from './PrivateRoute';
+import Login from './Login';
+import Dashboard from './Dashboard';
+import NotFound from './NotFound';
 
-```markdown
-# Order Management API
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <Switch>
+          <Route exact path="/" component={Login} />
+          <PrivateRoute path="/dashboard" component={Dashboard} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
+    </AuthProvider>
+  );
+};
 
-The Order Management API is a secure Java-based API for managing customer orders. It provides endpoints for creating, retrieving, updating, and deleting orders, with authentication and authorization implemented using OAuth.
+export default App;
 
-## Project Overview
+// AuthContext.js
+import React, { createContext, useState } from 'react';
+import axios from 'axios';
 
-The API follows a modular structure and separates concerns into distinct components such as controllers, services, and models. It adheres to Java code standards, including best practices, naming conventions, documentation, error handling, and SOLID principles.
+const AuthContext = createContext();
 
-## Folder Structure
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
 
-- `src/main/java`: Contains the main Java source code
-  - `com.example.ordermanagement`: Base package
-    - `config`: Configuration classes
-    - `controller`: API controllers
-    - `model`: Data models
-    - `repository`: Data access repositories
-    - `security`: Security-related classes
-    - `service`: Business logic services
-- `src/main/resources`: Contains configuration files
-- `src/test/java`: Contains unit and integration tests
+  const login = async (username, password) => {
+    try {
+      const response = await axios.post('/api/login', { username, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token);
+      setUser(token);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
 
-## Key Components
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
 
-- `OrderController`: Handles HTTP requests for order-related operations
-- `OrderService`: Implements business logic for order management
-- `Order`: Represents the order data model
-- `SecurityConfig`: Configures security settings and authentication
-- `JwtTokenProvider`: Generates and validates JWT tokens for authentication
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-## Setup Instructions
+export default AuthContext;
 
-1. Clone the repository: `git clone https://github.com/example/order-management-api.git`
-2. Navigate to the project directory: `cd order-management-api`
-3. Build the project: `./mvnw clean install`
-4. Run the application: `./mvnw spring-boot:run`
+// PrivateRoute.js
+import React, { useContext } from 'react';
+import { Route, Redirect } from 'react-router-dom';
+import AuthContext from './AuthContext';
 
-## Security Considerations
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  const { user } = useContext(AuthContext);
 
-The API implements security measures to protect sensitive data and ensure authorized access only. It follows security best practices, including:
+  return (
+    <Route
+      {...rest}
+      render={(props) =>
+        user ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to={{ pathname: '/', state: { from: props.location } }} />
+        )
+      }
+    />
+  );
+};
 
-- OAuth authentication with JWT tokens
-- Input validation and error handling
-- Secure communication over HTTPS
-- Proper authentication and authorization checks
-- Secure storage of sensitive data
-- Regular security updates and patches
+export default PrivateRoute;
 
-Please refer to the code and inline comments for more details on the security implementation.
+// Login.js
+import React, { useState, useContext } from 'react';
+import AuthContext from './AuthContext';
+
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const { login } = useContext(AuthContext);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login(username, password);
+    } catch (error) {
+      setError('Invalid username or password');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      {error && <p>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
 ```
 
-src/main/java/com/example/ordermanagement/config/SecurityConfig.java:
-```java
-package com.example.ordermanagement.config;
+In this implementation:
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+1. The `App` component serves as the main entry point and sets up the routing using `react-router-dom`. It uses the `AuthProvider` to provide authentication context to the entire application.
 
-import com.example.ordermanagement.security.JwtAuthenticationFilter;
+2. The `AuthContext` component manages the authentication state using the `useState` hook. It provides login and logout functions to update the user state and store the JWT token in local storage.
 
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .antMatchers("/api/public/**").permitAll()
-            .antMatchers("/api/orders/**").authenticated()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()));
-    }
-    
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-}
-```
-Description: The `SecurityConfig` class configures the security settings for the API. It enables Web Security, defines authorization rules, and sets up JWT-based authentication.
+3. The `PrivateRoute` component is used to protect routes that require authentication. It checks if the user is authenticated and redirects to the login page if not.
 
-src/main/java/com/example/ordermanagement/security/JwtTokenProvider.java:
-```java
-package com.example.ordermanagement.security;
+4. The `Login` component handles the login form submission. It uses the `login` function from the `AuthContext` to authenticate the user and handles errors appropriately.
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+Security considerations:
+- Input validation: The login form inputs should be validated on both the client-side and server-side to prevent injection attacks.
+- Authentication: JWT is used for authentication, ensuring secure communication between the client and server.
+- Authorization: The `PrivateRoute` component ensures that only authenticated users can access protected routes.
+- Session management: The JWT token is stored in local storage, providing stateless session management.
+- Error handling: Errors are handled and logged appropriately to avoid exposing sensitive information.
+- Dependency security: Use secure and up-to-date dependencies to mitigate known vulnerabilities.
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+To address the user experience issues:
+- Dead clicks: Investigate and fix any unresponsive or broken elements causing dead clicks.
+- Low experience scores: Analyze the sessions with low scores to identify specific pain points and optimize the user experience accordingly.
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+Additionally, consider implementing the following security measures:
+- Secure communication: Use HTTPS to encrypt data in transit.
+- Secure configuration: Follow security best practices for React configuration, such as using security headers and disabling unnecessary features.
+- Security testing: Perform regular security testing, including penetration testing and code reviews, to identify and address vulnerabilities.
+- Documentation: Maintain up-to-date security documentation, including threat models and security policies.
 
-@Component
-public class JwtTokenProvider {
-    
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    
-    @Value("${jwt.expiration}")
-    private long jwtExpirationInMs;
-    
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities());
-        
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(userDetails.getUsername())
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-            .signWith(SignatureAlgorithm.HS512, jwtSecret)
-            .compact();
-    }
-}
-```
-Description: The `JwtTokenProvider` class is responsible for generating JWT tokens for authenticated users. It includes the user's roles as claims in the token.
-
-src/main/java/com/example/ordermanagement/controller/OrderController.java:
-```java
-package com.example.ordermanagement.controller;
-
-import javax.validation.Valid;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.ordermanagement.model.Order;
-import com.example.ordermanagement.service.OrderService;
-
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
-    
-    private final OrderService orderService;
-    
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-    
-    @PostMapping
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
-        Order createdOrder = orderService.createOrder(order);
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
-    }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        Order order = orderService.getOrderById(id);
-        return new ResponseEntity<>(order, HttpStatus.OK);
-    }
-}
-```
-Description: The `OrderController` class handles HTTP requests for order-related operations. It exposes endpoints for creating and retrieving orders, with input validation and proper response statuses.
-
-src/main/java/com/example/ordermanagement/model/Order.java:
-```java
-package com.example.ordermanagement.model;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-
-@Entity
-public class Order {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotNull
-    private String customerName;
-    
-    @NotNull
-    @Positive
-    private BigDecimal totalAmount;
-    
-    private LocalDateTime orderDateTime;
-    
-    // Getters and setters
-}
-```
-Description: The `Order` class represents the data model for an order. It includes fields for order ID, customer name, total amount, and order date/time, with validation annotations.
-
-src/main/java/com/example/ordermanagement/service/OrderService.java:
-```java
-package com.example.ordermanagement.service;
-
-import java.time.LocalDateTime;
-
-import org.springframework.stereotype.Service;
-
-import com.example.ordermanagement.model.Order;
-import com.example.ordermanagement.repository.OrderRepository;
-
-@Service
-public class OrderService {
-    
-    private final OrderRepository orderRepository;
-    
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
-    
-    public Order createOrder(Order order) {
-        order.setOrderDateTime(LocalDateTime.now());
-        return orderRepository.save(order);
-    }
-    
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
-    }
-}
-```
-Description: The `OrderService` class implements the business logic for order management. It includes methods for creating and retrieving orders, with data persistence using the `OrderRepository`.
-
-This covers the main components of the Order Management API based on the provided task details, requirements, and templates. The code follows Java code standards, implements security measures, and adheres to the specified project structure and guidelines.
-
-Remember to handle exceptions appropriately, write unit and integration tests, and follow versioning standards as mentioned in the templates.
+Remember to adapt and expand upon this code based on your specific application requirements and security needs.
