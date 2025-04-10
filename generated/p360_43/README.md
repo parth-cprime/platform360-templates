@@ -1,164 +1,43 @@
-# Order Management API 
+# Customer Feedback Notification System
 
-## Overview
-This project implements a secure order management API using React. It allows creating, retrieving, updating, and deleting orders while following security best practices.
+This project implements a notification system that alerts customer service team members when urgent customer feedback is submitted through a web form. It provides an API for managing customer feedback and sending notifications to the appropriate team members.
 
 ## Folder Structure
-- `/src` - Contains the main source code
-  - `/components` - React components 
-  - `/services` - Business logic and external integrations
-  - `/utils` - Utility functions and helpers
-- `/tests` - Contains unit and integration tests
-- `/config` - Configuration files
-- `/docs` - Project documentation
+
+- `src/` - Contains the main source code files
+  - `controllers/` - Defines the API route handlers
+  - `services/` - Contains the business logic and external integrations 
+  - `models/` - Defines the data models and schemas
+  - `middleware/` - Contains custom middleware functions
+  - `config/` - Holds configuration files
+  - `utils/` - Provides utility functions
+- `tests/` - Contains unit and integration tests
+- `package.json` - Specifies project dependencies and scripts
+- `.env` - Defines environment variables (not committed to VCS)
 
 ## Key Components
-- `OrderController` - Handles order-related API endpoints
-- `OrderService` - Implements order management business logic 
-- `AuthMiddleware` - Handles authentication using JWT
-- `InputValidation` - Validates user inputs
-- `ErrorHandler` - Centralized error handling
+
+- `FeedbackController` - Handles API routes related to customer feedback
+- `NotificationService` - Manages sending notifications to team members
+- `FeedbackModel` - Defines the schema for customer feedback data
+- `authMiddleware` - Implements JWT authentication
+- `validationMiddleware` - Performs input validation
+- `errorMiddleware` - Handles errors and sends appropriate responses
 
 ## Setup Instructions
+
 1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Set required environment variables
-4. Run `npm start` to start the development server
+2. Install dependencies: `npm install`
+3. Set up environment variables in `.env` file
+4. Run the application: `npm start`
+5. Access the API at `http://localhost:3000`
 
 ## Security Considerations
-- Authentication using JWT 
-- Password hashing with bcrypt
-- Input validation using Joi
-- Security headers using Helmet
-- Rate limiting to prevent abuse
-- CORS configuration to restrict origins
-- Sensitive data stored using encryption
 
-2. File Details:
-
-File Path: `/src/controllers/OrderController.js`
-```javascript
-import OrderService from '../services/OrderService';
-import AuthMiddleware from '../middlewares/AuthMiddleware';
-
-class OrderController {
-  async createOrder(req, res) {
-    try {
-      await AuthMiddleware.authenticate(req);
-      const order = await OrderService.createOrder(req.body);
-      res.status(201).json(order);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  async getOrder(req, res) {
-    try {
-      await AuthMiddleware.authenticate(req);
-      const order = await OrderService.getOrder(req.params.id);
-      res.json(order);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  // Other CRUD methods...
-}
-
-export default new OrderController();
-```
-Description: Handles order-related API endpoints and validates authentication.
-
-File Path: `/src/services/OrderService.js` 
-```javascript
-import Order from '../models/Order';
-
-class OrderService {
-  async createOrder(data) {
-    const order = new Order(data);
-    await order.save();
-    return order;
-  }
-
-  async getOrder(id) {
-    const order = await Order.findById(id);
-    return order;
-  }
-
-  // Other order management logic...
-}
-
-export default new OrderService();
-```
-Description: Implements order management business logic.
-
-File Path: `/src/middlewares/AuthMiddleware.js`
-```javascript
-import jwt from 'jsonwebtoken';
-import { AuthenticationError } from '../utils/errors';
-
-class AuthMiddleware { 
-  async authenticate(req) {
-    const token = req.headers.authorization;
-    if (!token) {
-      throw new AuthenticationError('No token provided');
-    }
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-    } catch (err) {
-      throw new AuthenticationError('Invalid token');
-    }
-  }
-}
-
-export default new AuthMiddleware();
-```
-Description: Middleware to handle JWT authentication.
-
-File Path: `/src/utils/validation.js`
-```javascript
-import Joi from 'joi';
-import { ValidationError } from './errors';
-
-export const validateCreateOrder = (data) => {
-  const schema = Joi.object({
-    customer: Joi.string().required(),
-    items: Joi.array().items(
-      Joi.object({
-        name: Joi.string().required(),
-        quantity: Joi.number().min(1).required()
-      })  
-    ).required()
-  });
-
-  const { error } = schema.validate(data);
-  if (error) {
-    throw new ValidationError(error.details[0].message);
-  }
-};
-```
-Description: Validates user inputs for creating an order.
-
-File Path: `/src/utils/errors.js`
-```javascript
-export class ValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
-
-export class AuthenticationError extends Error {
-  constructor(message) {
-    super(message); 
-    this.name = 'AuthenticationError';
-  }
-}
-```
-Description: Defines custom error classes for validation and authentication errors.
-
-The project follows the structure guidelines with separate directories for controllers, services, models, tests, configuration, and documentation. It implements JWT authentication, input validation, secure password hashing, error handling, and follows security best practices.
-
-Let me know if you have any other questions! I'd be happy to explain further or make adjustments to the code.
+- API endpoints are protected with JWT authentication
+- Input validation is performed on all requests
+- Error handling middleware sends generic error messages to client
+- CORS is configured to allow only trusted origins
+- Content Security Policy headers are set using helmet
+- Rate limiting middleware prevents excessive requests
+- Sensitive data is hashed before storing in database
