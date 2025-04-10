@@ -1,11 +1,28 @@
 import axios from 'axios';
+import jwtDecode from 'jwt-decode';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const sendAlert = async (feedback) => {
-  return axios.post(`${API_URL}/alerts`, { feedback });
+const login = async (username, password) => {
+  const response = await axios.post(`${API_URL}/auth/login`, { username, password });
+  localStorage.setItem('accessToken', response.data.accessToken);
+};
+
+const logout = () => {
+  localStorage.removeItem('accessToken');
+};
+
+const getLoggedInUser = () => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    const decodedToken = jwtDecode(token);
+    return decodedToken.sub;
+  }
+  return null;
 };
 
 export default {
-  sendAlert,
+  login,
+  logout,
+  getLoggedInUser,
 };
