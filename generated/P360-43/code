@@ -1,216 +1,250 @@
-Here is a secure, well-structured React project for the order management API based on the provided details:
+Here is the generated code based on the provided task details, requirements, and templates:
 
-```
-README.md
+1. README.md
 
 # Order Management API
 
-This project implements a secure order management API in React, following security best practices and a standard project structure.
-
-## Overview
-
-The Order Management API allows creating, retrieving, updating and deleting orders. It incorporates JWT authentication, input validation, and proper error handling.
+This project provides an Order Management API with secure authentication and authorization using JWT tokens. It allows customers to submit feedback and notifies the appropriate customer service team member when urgent issues are reported.
 
 ## Folder Structure
 
-- `/src` - Main source code
-  - `/api` - API routes and controllers
-  - `/components` - Reusable React components 
-  - `/models` - Data models and database interaction
-  - `/services` - Business logic and utilities
-  - `/validation` - Input validation schemas
-- `/test` - Unit and integration tests
-- `app.js` - Express application setup
-- `server.js` - Server entry point
-- `.env` - Environment configuration
+- `src/main/java`: Contains the main Java source code
+  - `com.example.orderapi`: Base package for the application
+    - `config`: Configuration classes
+    - `controller`: API controllers
+    - `dto`: Data Transfer Objects
+    - `exception`: Custom exception classes
+    - `model`: Domain model classes
+    - `repository`: Data access layer interfaces
+    - `security`: Security-related classes
+    - `service`: Business logic services
+- `src/main/resources`: Contains application configuration files
+- `src/test/java`: Contains unit and integration tests
 
 ## Key Components
 
-- `app.js` configures the Express app, middleware, and routes
-- `/api/orders.js` defines the order management API endpoints
-- `/models/order.js` defines the order data model  
-- `/services/orderService.js` contains core order management logic
-- `/validation/orderSchema.js` specifies order input validation rules
+- `SecurityConfig`: Configures security settings and JWT authentication
+- `JwtTokenProvider`: Generates and validates JWT tokens
+- `FeedbackController`: Handles feedback submission and notifications
+- `FeedbackService`: Processes feedback and sends notifications
+- `FeedbackRepository`: Accesses the feedback data store
 
-## Setup
+## Setup Instructions
 
-1. Install dependencies: `npm install`
-2. Configure environment variables in `.env` 
-3. Start the server: `npm start`
+1. Clone the repository
+2. Configure the database connection in `application.properties`
+3. Build the project using Maven: `mvn clean install`
+4. Run the application: `java -jar target/order-api.jar`
 
 ## Security Considerations
 
-- JWT authentication is used to secure API endpoints
-- Sensitive credentials are stored in environment variables
-- User inputs are validated using Joi schemas
-- Errors are handled and logged appropriately 
-- CORS, rate limiting and security headers are enabled
+- JWT authentication is used to secure the API endpoints
+- Passwords are hashed using BCrypt before storing
+- Input validation is implemented to prevent common attacks
+- Error handling is centralized using a `GlobalExceptionHandler`
+- Sensitive data is not logged or exposed in error messages
 
----
+2. File Details
 
-/src/app.js
+File: `src/main/java/com/example/orderapi/config/SecurityConfig.java`
+```java
+package com.example.orderapi.config;
 
-```js
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-const securityConfig = require('./config/security');
-const orderRoutes = require('./api/orders');
-const errorHandler = require('./middleware/errorHandler');
+import com.example.orderapi.security.JwtAuthenticationFilter;
 
-const app = express();
-
-// Security middleware
-app.use(helmet(securityConfig.helmet));
-app.use(rateLimit(securityConfig.rateLimit));  
-app.use(cors(securityConfig.cors));
-
-// Request parsing
-app.use(express.json());
-
-// API routes
-app.use('/api/orders', orderRoutes);
-
-// Error handling
-app.use(errorHandler);
-
-module.exports = app;
-```
-
-Configures the Express application with security middleware, request parsing, API routes, and error handling.
-
----
-
-/src/api/orders.js
-
-```js
-const express = require('express');
-const orderService = require('../services/orderService');
-const { authenticateJWT } = require('../middleware/auth');
-const { validateOrder } = require('../validation/orderSchema');
-
-const router = express.Router();
-
-router.post('/', authenticateJWT, validateOrder, async (req, res, next) => {
-  try {
-    const order = await orderService.createOrder(req.body);
-    res.status(201).json(order);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Other CRUD routes for orders
-// ...
-
-module.exports = router;
-```
-
-Defines the order management API routes for creating, retrieving, updating and deleting orders. Includes JWT authentication and input validation middleware.
-
----
-
-/src/models/order.js
-
-```js
-const mongoose = require('mongoose');
-
-const orderSchema = new mongoose.Schema({
-  customerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  items: [{
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/public/**").permitAll()
+            .antMatchers("/api/private/**").authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
-  }],
-  totalAmount: {
-    type: Number,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered'],
-    default: 'pending'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-module.exports = mongoose.model('Order', orderSchema);
-```
-
-Defines the Mongoose schema and model for orders, including fields, data types, validations and relationships.
-
----
-
-/src/services/orderService.js
-
-```js
-const Order = require('../models/order');
-
-async function createOrder(orderData) {
-  const order = new Order(orderData);
-  await order.save();
-  return order;
+    
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
 }
-
-// Other order service methods
-// ...
-
-module.exports = {
-  createOrder,
-  // ...
-};
 ```
+Purpose: Configures security settings for the application, including JWT authentication and authorization rules.
 
-Contains the core business logic for managing orders, such as creating, retrieving, updating and deleting orders from the database.
+File: `src/main/java/com/example/orderapi/security/JwtTokenProvider.java`
+```java
+package com.example.orderapi.security;
 
----
+import java.util.Date;
 
-/src/validation/orderSchema.js
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
-```js
-const Joi = require('joi');
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
-const orderSchema = Joi.object({
-  customerId: Joi.string().required(),
-  items: Joi.array().items(Joi.object({
-    productId: Joi.string().required(),
-    quantity: Joi.number().integer().min(1).required()
-  })).min(1).required(),
-  totalAmount: Joi.number().min(0).required()  
-});
+@Component
+public class JwtTokenProvider {
 
-function validateOrder(req, res, next) {
-  const { error } = orderSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpirationInMs;
+
+    public String generateToken(Authentication authentication) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+
+        return Jwts.builder()
+            .setSubject(authentication.getName())
+            .setIssuedAt(now)
+            .setExpiration(expiryDate)
+            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+            .compact();
+    }
+
+    public String getUsernameFromJWT(String token) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(jwtSecret)
+            .parseClaimsJws(token)
+            .getBody();
+
+        return claims.getSubject();
+    }
+
+    public boolean validateToken(String authToken) {
+        try {
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }
-
-module.exports = {
-  orderSchema,
-  validateOrder
-};
 ```
+Purpose: Provides methods to generate and validate JWT tokens for authentication.
 
-Defines the Joi validation schema for orders and a middleware function to validate incoming order data against the schema.
+File: `src/main/java/com/example/orderapi/controller/FeedbackController.java`
+```java
+package com.example.orderapi.controller;
 
-The project also includes various other components like auth middleware, error handling, unit tests, etc. that are structured similarly in their respective directories.
+import javax.validation.Valid;
 
-Let me know if you have any other questions!
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.orderapi.dto.FeedbackDTO;
+import com.example.orderapi.service.FeedbackService;
+
+@RestController
+@RequestMapping("/api/feedback")
+public class FeedbackController {
+
+    @Autowired
+    private FeedbackService feedbackService;
+
+    @PostMapping
+    public ResponseEntity<Void> submitFeedback(@Valid @RequestBody FeedbackDTO feedbackDTO) {
+        feedbackService.processFeedback(feedbackDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+}
+```
+Purpose: Handles the submission of customer feedback through the API endpoint.
+
+File: `src/main/java/com/example/orderapi/dto/FeedbackDTO.java`
+```java
+package com.example.orderapi.dto;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+public class FeedbackDTO {
+
+    @NotBlank(message = "Customer name is required")
+    private String customerName;
+
+    @NotBlank(message = "Feedback message is required")
+    @Size(max = 500, message = "Feedback message must not exceed 500 characters")
+    private String message;
+
+    private boolean urgent;
+
+    // Getters and setters
+}
+```
+Purpose: Defines the structure of the feedback data transfer object and applies validation constraints.
+
+File: `src/main/java/com/example/orderapi/service/FeedbackService.java`
+```java
+package com.example.orderapi.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.orderapi.dto.FeedbackDTO;
+import com.example.orderapi.model.Feedback;
+import com.example.orderapi.repository.FeedbackRepository;
+
+@Service
+public class FeedbackService {
+
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    public void processFeedback(FeedbackDTO feedbackDTO) {
+        Feedback feedback = new Feedback();
+        feedback.setCustomerName(feedbackDTO.getCustomerName());
+        feedback.setMessage(feedbackDTO.getMessage());
+        feedback.setUrgent(feedbackDTO.isUrgent());
+        feedbackRepository.save(feedback);
+
+        if (feedback.isUrgent()) {
+            notificationService.sendNotification(feedback);
+        }
+    }
+}
+```
+Purpose: Contains the business logic for processing feedback and sending notifications for urgent issues.
+
+This is a sample of the generated code following the provided templates and guidelines. The complete project would include additional files such as repository interfaces, model classes, exception handlers, and test classes.
