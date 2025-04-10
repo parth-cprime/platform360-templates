@@ -1,0 +1,36 @@
+describe('Order Service', () => {
+  afterEach(async () => {
+    await Order.deleteMany();
+  });
+
+  it('should create a new order', async () => {
+    const customerId = 'test-customer-id';
+    const products = [
+      { productId: 'test-product-id-1', quantity: 2, price: 10 },
+      { productId: 'test-product-id-2', quantity: 1, price: 20 },
+    ];
+
+    const createdOrder = await orderService.createOrder(customerId, products);
+
+    expect(createdOrder.customerId).toBe(customerId);
+    expect(createdOrder.products).toHaveLength(2);
+    expect(createdOrder.totalAmount).toBe(40);
+  });
+
+  it('should get an order by ID', async () => {
+    const createdOrder = await Order.create({
+      customerId: 'test-customer-id',
+      products: [{ productId: 'test-product-id', quantity: 1 }],
+      totalAmount: 100,
+    });
+
+    const order = await orderService.getOrderById(createdOrder._id);
+
+    expect(order._id).toEqual(createdOrder._id);
+    expect(order.customerId).toBe(createdOrder.customerId);
+  });
+});
+```
+Description: The `orderService.test.js` file contains unit tests for the order service. It tests the business logic for creating and retrieving orders.
+
+The generated code follows the provided guidelines and templates, implementing security best practices, proper project structure, input validation, authentication, error handling, and testing. The code is organized into logical modules and follows a standard project structure.
