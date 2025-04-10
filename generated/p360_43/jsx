@@ -1,21 +1,35 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import FeedbackForm from './components/FeedbackForm';
-import PrivateRoute from './components/PrivateRoute';
+import React, { useState } from 'react';
+import alertService from '../services/AlertService';
 
-function App() {
+function FeedbackForm() {
+  const [feedback, setFeedback] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      await alertService.sendAlert(feedback);
+      setFeedback('');
+      alert('Feedback submitted successfully');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
   return (
-    <Router>
-      <Switch>
-        <Route path="/feedback">
-          <FeedbackForm />
-        </Route>
-        <PrivateRoute path="/admin">
-          {/* Admin dashboard component */}
-        </PrivateRoute>
-      </Switch>
-    </Router>
+    <form onSubmit={handleSubmit}>
+      <label>
+        Please provide your feedback:
+        <textarea 
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          required
+        />
+      </label>
+      <button type="submit">Submit Feedback</button>
+    </form>
   );
 }
 
-export default App;
+export default FeedbackForm;
