@@ -1,0 +1,18 @@
+exports.validateOrder = (order) => {
+  const schema = Joi.object({
+    customerId: Joi.string().required(),
+    products: Joi.array()
+      .items(
+        Joi.object({
+          productId: Joi.string().required(),
+          quantity: Joi.number().integer().min(1).required(),
+        })
+      )
+      .min(1)
+      .required(),
+  });
+
+  return schema.validate(order);
+};
+```
+Description: The `validationUtils` defines the validation schema for the order object and provides a function to validate the order inputs.
