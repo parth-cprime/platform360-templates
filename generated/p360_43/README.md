@@ -1,34 +1,38 @@
 # Order Management API
 
 ## Project Overview
-This Order Management API is designed to provide an automated system for notifying the customer service team when customer feedback requiring immediate attention is submitted. It includes features like analyzing incoming feedback, routing notifications to the appropriate team member, and maintaining a dashboard of pending and acknowledged urgent feedback.
+This project provides an Order Management API which automatically analyzes incoming feedback for urgent keywords or negative sentiment, routes notifications to the appropriate team member based on the feedback category, allows team members to acknowledge receipt of notifications, and provides a simple dashboard showing pending and acknowledged urgent feedback.
 
 ## Security Considerations
-We have considered the following security practices while designing this API:
-1. JWT Token Validation for secure authentication.
-2. Input Validation and Sanitization to prevent injection attacks.
-3. Secure Password Hashing using bcrypt.
-4. CORS enabled with proper configuration to prevent unauthorized access.
-5. Error Handling to prevent information leakage.
-6. Secure Logging for monitoring and audit purposes.
+- Implement JWT token validation for secure authentication
+- Enable CORS with proper configuration for secure cross-origin requests
+- Use Helmet for secure HTTP headers
+- Implement rate limiting to prevent brute-force attacks
+- Encrypt sensitive data to ensure data privacy
+- Implement proper error handling to prevent information leakage
+- Validate all inputs to prevent injection attacks
+- Implement security logging to monitor for potential security threats
 
 ## Authentication Method
-JWT (JSON Web Tokens) is used as the authentication method for this API.
+This project uses JSON Web Tokens (JWT) for authentication. 
 
 ## Data Sensitivity Level
-The data sensitivity level for this API is internal.
+The data handled by this application is classified as internal.
 
 ## Installation Instructions
-1. Clone the repository.
-2. `cd` into the project directory.
-3. Run `npm install` to install the dependencies.
-4. Set up your environment variables in a `.env` file in the root directory.
-5. Run `npm start` to start the server.
+1. Clone the project repository
+2. Install dependencies with `npm install`
+3. Set environment variables as per the `.env.example` file
+4. Run `npm start` to start the application
 
 ## Security Best Practices Followed
-1. JWT Token Validation
-2. Secure Password Hashing
-3. CORS Configuration
-4. Input Validation and Sanitization
-5. Error Handling
-6. Secure Logging
+- All sensitive data is stored in environment variables
+- Proper error handling is implemented to prevent information leakage
+- All inputs are validated and sanitized to prevent injection attacks
+- Security headers are set with Helmet
+- CORS is enabled with proper configuration
+- Rate limiting is implemented to prevent brute-force attacks
+- Sensitive data is encrypted before storage
+- JWT tokens are securely validated
+- Security logging is implemented
+- Principle of least privilege is followed in access controls
