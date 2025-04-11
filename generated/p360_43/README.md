@@ -1,38 +1,39 @@
-# P360 Order Management API
+# Order Management API
 
 ## Project Overview
-This project provides an API for the P360 order management system. It includes features such as analyzing incoming feedback for urgent keywords or negative sentiment, routing notifications based on feedback category, allowing team members to acknowledge notifications, and providing a dashboard showing pending and acknowledged urgent feedback.
+This project is a customer service notification system that automatically analyzes incoming feedback for urgent keywords or negative sentiment and routes notifications to the appropriate team member. This system is built using React and provides a high level of security fitting for internal data sensitivity.
 
 ## Security Considerations
-1. Proper JWT token validation is implemented to ensure secure authentication.
-2. We use secure password hashing.
-3. CORS is enabled with proper configuration to prevent Cross-Site Request Forgery (CSRF) attacks.
-4. Rate limiting is implemented to prevent brute force attacks.
-5. Security headers are used to prevent Cross-Site Scripting (XSS) and other code injection attacks.
-6. Sensitive data is encrypted.
-7. Proper error handling is put in place to prevent information disclosure.
-8. Session management is securely implemented.
-9. All input data is validated and sanitized to prevent SQL injection and other attacks.
-10. Security logging is used to detect and respond to security incidents.
+Security is a crucial aspect of this project. We have:
+1. Implemented proper JWT token validation
+2. Used secure password hashing
+3. Enabled CORS with proper configuration
+4. Implemented rate limiting
+5. Used security headers
+6. Encrypted sensitive data
+7. Implemented proper error handling
+8. Used secure session management
+9. Validated all input data
+10. Implemented proper logging
 
 ## Authentication Method
-We use JSON Web Token (JWT) for authentication. JWT is a widely adopted open standard that allows transmitting data between parties as a JSON object in a secure manner. 
+This project uses JWT (JSON Web Tokens) for authentication. JWT is a compact, URL-safe means of representing claims to be transferred between two parties. We use it to securely transmit information between parties as a JSON object.
 
 ## Data Sensitivity Level
-The data sensitivity level is internal. Access to the data is restricted to authorized internal users only.
+The data sensitivity level for this project is classified as "internal". It means that the data used and processed in this project is intended for internal use and should not be disclosed to unauthorized individuals, entities, or processes.
 
 ## Installation Instructions
-To install the project, follow the steps below:
-1. Clone the project from the repository.
-2. Install the required dependencies using `npm install`.
-3. Set up the required environment variables.
-4. Run the project using `npm start`.
+Clone the repository and run `npm install` to install the dependencies. Then, run `npm start` to start the application. Make sure to set up the necessary environment variables in a `.env` file in the project root.
 
 ## Security Best Practices Followed
-1. Security by design: Security was a consideration from the beginning of the project.
-2. Principle of least privilege: Users are only given the permissions they need to perform their tasks.
-3. Input validation: All user input is validated and sanitized.
-4. Password security: Passwords are hashed using a strong algorithm.
-5. Secure transmission: All data is transmitted over secure protocols.
-6. Error handling: Errors are properly handled and do not reveal any sensitive information.
-7. Security updates: The project's dependencies are regularly updated to include the latest security patches.
+We followed a number of security best practices in this project:
+1. React security best practices
+2. Using environment variables for sensitive data
+3. Proper error handling
+4. Using TypeScript for type safety
+5. Comprehensive testing
+6. Proper logging
+7. Followed the principle of least privilege
+8. Implemented secure session management
+9. Used secure communication protocols
+10. Regular security updates
