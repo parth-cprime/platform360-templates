@@ -1,39 +1,34 @@
 # Order Management API
 
 ## Project Overview
-This project is a customer service notification system that automatically analyzes incoming feedback for urgent keywords or negative sentiment and routes notifications to the appropriate team member. This system is built using React and provides a high level of security fitting for internal data sensitivity.
+This project is an Order Management API which provides an automated notification system for a customer service team. It analyzes incoming feedback for urgency and directs notifications to the appropriate team member. It also provides a simple dashboard showing pending and acknowledged urgent feedback.
 
 ## Security Considerations
-Security is a crucial aspect of this project. We have:
-1. Implemented proper JWT token validation
-2. Used secure password hashing
-3. Enabled CORS with proper configuration
-4. Implemented rate limiting
-5. Used security headers
-6. Encrypted sensitive data
-7. Implemented proper error handling
-8. Used secure session management
-9. Validated all input data
-10. Implemented proper logging
+We've implemented the following security measures:
+1. JWT token validation for secure authentication
+2. CORS enabled with proper configuration
+3. Rate limiting to prevent abuse
+4. Security headers via Helmet middleware
+5. Encryption of sensitive data
+6. Proper error handling to prevent information leaks
+7. Input validation and sanitization to prevent injection attacks
 
 ## Authentication Method
-This project uses JWT (JSON Web Tokens) for authentication. JWT is a compact, URL-safe means of representing claims to be transferred between two parties. We use it to securely transmit information between parties as a JSON object.
+We're using JSON Web Tokens (JWT) for authentication. This method is stateless and scalable, allowing for secure data transfer between parties.
 
 ## Data Sensitivity Level
-The data sensitivity level for this project is classified as "internal". It means that the data used and processed in this project is intended for internal use and should not be disclosed to unauthorized individuals, entities, or processes.
+The data handled by this API is considered internal. It's important to protect this data against unauthorized access or modification.
 
 ## Installation Instructions
-Clone the repository and run `npm install` to install the dependencies. Then, run `npm start` to start the application. Make sure to set up the necessary environment variables in a `.env` file in the project root.
+1. Clone the project repository
+2. Install the dependencies with `npm install`
+3. Set your environment variables in a `.env` file
+4. Start the server with `npm start`
 
 ## Security Best Practices Followed
-We followed a number of security best practices in this project:
-1. React security best practices
-2. Using environment variables for sensitive data
-3. Proper error handling
-4. Using TypeScript for type safety
-5. Comprehensive testing
-6. Proper logging
-7. Followed the principle of least privilege
-8. Implemented secure session management
-9. Used secure communication protocols
-10. Regular security updates
+1. Least Privilege Principle: Every module can access only the information and resources necessary for its legitimate purpose.
+2. Regular Updates: Dependencies are kept up to date to benefit from the latest security patches.
+3. Secure Defaults: Configuration settings are set to secure values by default.
+4. Encryption: Sensitive data is encrypted during transit and at rest.
+5. Logging: All actions are logged for audit purposes.
+6. Error Handling: Errors are properly handled and do not disclose sensitive information.
