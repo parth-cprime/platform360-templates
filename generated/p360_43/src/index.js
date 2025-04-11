@@ -1,26 +1,32 @@
-// Application entry point
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const securityConfig = require('./config/security');
+const routes = require('./routes');
 
 const app = express();
 
-// Security middlewares
-app.use(helmet(securityConfig.helmet));
-app.use(cors(securityConfig.cors));
-app.use(rateLimit(securityConfig.rateLimit));
+// set security HTTP headers
+app.use(helmet());
 
-// Import routes
-const apiRoutes = require('./routes/api');
+// allow cross-origin requests
+app.use(cors());
 
-// Use routes
-app.use('/api', apiRoutes);
+// rate limiting
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+}));
 
-// Error handling middleware
-app.use(require('./middleware/error'));
+// routes
+app.use('/api', routes);
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+app.listen(3000, () => console.log('Server started on port 3000'));
+
+module.exports = app;
