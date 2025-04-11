@@ -1,6 +1,0 @@
-const logger = winston.createLogger({
-  // Logger configuration...
-});
-
-module.exports = logger;
-```
