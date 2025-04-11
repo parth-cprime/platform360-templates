@@ -1,13 +1,14 @@
-Based on the provided task details, requirements, user experience insights, and security template, here's a secure code implementation for a React application:
+Here is a secure React code skeleton based on the provided details:
 
 ```jsx
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
-import PrivateRoute from './PrivateRoute';
-import Login from './Login';
-import Dashboard from './Dashboard';
+import { AuthProvider } from './auth/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -15,7 +16,8 @@ function App() {
       <Router>
         <Switch>
           <Route path="/login" component={Login} />
-          <PrivateRoute path="/" component={Dashboard} />
+          <PrivateRoute exact path="/" component={Dashboard} />
+          <Route component={NotFound} />
         </Switch>
       </Router>
     </AuthProvider>
@@ -24,65 +26,53 @@ function App() {
 
 export default App;
 
-// AuthContext.js
+// auth/AuthContext.js
 import React, { createContext, useState } from 'react';
-import jwt from 'jsonwebtoken';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const login = async (credentials) => {
-    try {
-      // Perform secure login request to server
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (response.ok) {
-        const { token } = await response.json();
-        const decodedToken = jwt.decode(token);
-        setUser(decodedToken);
-        localStorage.setItem('token', token);
-      } else {
-        throw new Error('Invalid credentials');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
+    // Implement secure login logic
+    // Validate input
+    // Make API call with credentials
+    // Store JWT securely
+    // Set isAuthenticated to true
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
+    // Clear JWT from storage  
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// PrivateRoute.js
-import React, { useContext } from 'react';
+export default AuthContext;
+
+// components/PrivateRoute.js 
+import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { user } = useContext(AuthContext);
+  const { isAuthenticated } = useAuth();
 
   return (
     <Route
       {...rest}
       render={(props) =>
-        user ? <Component {...props} /> : <Redirect to="/login" />
+        isAuthenticated ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to="/login" />
+        )
       }
     />
   );
@@ -90,61 +80,38 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 
 export default PrivateRoute;
 
-// Login.js
-import React, { useContext, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
+// pages/Login.js
+import React from 'react';
+import { useAuth } from '../auth/AuthContext';
 
 const Login = () => {
-  const history = useHistory();
-  const { login } = useContext(AuthContext);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-
+  const { login } = useAuth();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      await login({ username, password });
-      history.push('/');
-    } catch (error) {
-      setError('Invalid credentials');
-    }
+    // Get username and password from form
+    // Call login function with credentials
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      {error && <p>{error}</p>}
-      <button type="submit">Login</button>
+      {/* Render login form */}
     </form>
   );
 };
 
 export default Login;
 
-// Dashboard.js
-import React, { useContext } from 'react';
-import { AuthContext } from './AuthContext';
+// pages/Dashboard.js
+import React from 'react';
+import { useAuth } from '../auth/AuthContext';
 
 const Dashboard = () => {
-  const { user, logout } = useContext(AuthContext);
-
+  const { logout } = useAuth();
+  
   return (
     <div>
-      <h1>Welcome, {user.username}!</h1>
+      <h1>Dashboard</h1>
       <button onClick={logout}>Logout</button>
     </div>
   );
@@ -153,43 +120,52 @@ const Dashboard = () => {
 export default Dashboard;
 ```
 
-## Security Considerations
+Security Considerations:
+1. Input Validation:
+   - Validate and sanitize all user inputs on the login form to prevent XSS and injection attacks.
 
-1. **Input Validation**: The login form inputs (`username` and `password`) are controlled components, and their values are directly used in the login request. Proper server-side validation should be implemented to prevent any potential injection attacks.
+2. Authentication:
+   - Implement secure authentication using JWT tokens.
+   - Store JWT securely on the client-side (e.g., using secure cookies or local storage).
+   - Protect against common authentication attacks like brute-force and credential stuffing.
 
-2. **Authentication**: The authentication is handled using JWT (JSON Web Tokens). Upon successful login, the server returns a JWT token, which is stored in the browser's local storage. The token is decoded on the client-side to extract user information. Ensure that the server securely signs and verifies the JWT tokens.
+3. Authorization:  
+   - Use `PrivateRoute` component to protect sensitive routes and ensure only authenticated users can access them.
 
-3. **Authorization**: The `PrivateRoute` component is used to protect routes that require authentication. It checks if the user is authenticated by verifying the presence of the `user` object in the `AuthContext`. If the user is not authenticated, they are redirected to the login page.
+4. Session Management:
+   - Implement secure session management using JWT tokens.
+   - Set appropriate token expiration times and provide a logout mechanism.
 
-4. **Session Management**: The JWT token is stored in the browser's local storage, allowing the user to remain authenticated across browser sessions. However, it's important to implement proper token expiration and refresh mechanisms on the server-side to prevent unauthorized access.
+5. Data Protection:
+   - Handle sensitive data securely by encrypting it in transit and at rest.
+   - Avoid storing sensitive data on the client-side.
 
-5. **Data Protection**: In this example, the data sensitivity is marked as "public," so no additional data protection measures are implemented. However, if sensitive data is involved, appropriate encryption and secure storage practices should be followed.
+6. Error Handling:
+   - Implement proper error handling and avoid exposing sensitive information in error messages.
 
-6. **Error Handling**: Error handling is implemented in the `login` function of the `AuthContext`. Any errors during the login process are caught, logged, and propagated to the calling component. Ensure that error messages displayed to the user do not expose sensitive information.
+7. Logging:
+   - Implement secure logging mechanisms to track important events and detect suspicious activities.
 
-7. **Logging**: In this example, errors during the login process are logged using `console.error`. In a production environment, proper logging mechanisms should be implemented to capture and monitor security-related events.
+8. API Security:
+   - Secure the API endpoints by implementing proper authentication and authorization checks.
+   - Use HTTPS to encrypt data in transit.
 
-8. **API Security**: The login request is made to the `/api/login` endpoint using the `fetch` function. Ensure that the server-side API endpoints are properly secured, implement rate limiting to prevent brute-force attacks, and validate and sanitize all incoming data.
+9. Dependency Security:
+   - Keep all dependencies up to date and regularly check for any known vulnerabilities.
+   - Use trusted and well-maintained dependencies.
 
-9. **Dependency Security**: Regularly update and monitor the dependencies used in the React application for any known vulnerabilities. Use trusted and well-maintained libraries and perform security audits of third-party dependencies.
+10. Infrastructure Security:
+    - Ensure the hosting environment is properly secured and configured.
+    - Use security headers like `X-XSS-Protection`, `X-Content-Type-Options`, etc.
 
-10. **Infrastructure Security**: Ensure that the hosting environment for the React application is properly secured. This includes configuring secure server settings, using HTTPS for all communications, and implementing proper access controls and network security measures.
+User Experience Considerations:
+- With a high overall experience score of 95 and low friction score of 5, the user experience seems to be positive. 
+- Address the few dead clicks (5) reported in 14% of sessions to further enhance the user experience.
+- Analyze the sessions with the lowest experience scores to identify and address any specific issues.
 
-## Security Testing Plan
+Additional Steps:
+- Implement comprehensive security testing, including penetration testing and vulnerability scans.
+- Develop security documentation outlining the implemented controls and best practices followed.
+- Regularly review and update the security measures to stay proactive against emerging threats.
 
-1. Conduct thorough security testing of the React application, including:
-   - Vulnerability scanning and penetration testing
-   - Input validation testing (e.g., XSS, SQL injection)
-   - Authentication and authorization testing
-   - Session management testing
-   - API security testing
-
-2. Perform code reviews to identify any potential security weaknesses or vulnerabilities.
-
-3. Implement continuous integration and continuous deployment (CI/CD) pipelines that include security scanning and testing as part of the build and deployment process.
-
-4. Regularly monitor and update the application dependencies to address any discovered security vulnerabilities.
-
-5. Conduct periodic security audits and assessments to ensure the application remains secure over time.
-
-Remember to consult with security experts and stay up to date with the latest React security best practices and guidelines to ensure the application remains secure.
+Remember to tailor the code and security measures based on the specific requirements and context of your application.
