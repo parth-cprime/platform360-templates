@@ -1,23 +1,21 @@
-Here is a secure React code skeleton based on the provided details:
+Based on the provided details, here's a sample secure React code implementation that addresses the security requirements, considers user experience insights, and follows the security template:
 
 ```jsx
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import { AuthProvider } from './auth/AuthContext';
+import { AuthProvider } from './components/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import NotFound from './pages/NotFound';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Switch>
-          <Route path="/login" component={Login} />
-          <PrivateRoute exact path="/" component={Dashboard} />
-          <Route component={NotFound} />
+          <Route exact path="/login" component={Login} />
+          <PrivateRoute path="/" component={Dashboard} />
         </Switch>
       </Router>
     </AuthProvider>
@@ -26,146 +24,153 @@ function App() {
 
 export default App;
 
-// auth/AuthContext.js
-import React, { createContext, useState } from 'react';
+// AuthContext.js
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  const login = async (credentials) => {
-    // Implement secure login logic
-    // Validate input
-    // Make API call with credentials
-    // Store JWT securely
-    // Set isAuthenticated to true
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  function login(userData) {
+    // Perform secure login logic
+    // Validate user credentials securely
+    // Issue JWT token upon successful authentication
+    // Set user state
+    setUser(userData);
+  }
+
+  function logout() {
+    // Clear user state and JWT token
+    setUser(null);
+  }
+
+  const value = {
+    user,
+    login,
+    logout,
   };
 
-  const logout = () => {
-    // Clear JWT from storage  
-    setIsAuthenticated(false);
-  };
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export default AuthContext;
-
-// components/PrivateRoute.js 
+// PrivateRoute.js
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from './AuthContext';
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated } = useAuth();
+function PrivateRoute({ component: Component, ...rest }) {
+  const { user } = useAuth();
 
   return (
     <Route
       {...rest}
       render={(props) =>
-        isAuthenticated ? (
+        user ? (
           <Component {...props} />
         ) : (
-          <Redirect to="/login" />
+          <Redirect
+            to={{
+              pathname: '/login',
+              state: { from: props.location },
+            }}
+          />
         )
       }
     />
   );
-};
+}
 
 export default PrivateRoute;
 
-// pages/Login.js
-import React from 'react';
-import { useAuth } from '../auth/AuthContext';
+// Login.js
+import React, { useState } from 'react';
+import { useAuth } from '../components/AuthContext';
 
-const Login = () => {
+function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const { login } = useAuth();
-  
-  const handleSubmit = async (e) => {
+
+  function handleSubmit(e) {
     e.preventDefault();
-    // Get username and password from form
-    // Call login function with credentials
-  };
+    // Perform input validation
+    // Sanitize and validate username and password
+    // Call login function with validated credentials
+    login({ username, password });
+  }
 
   return (
     <form onSubmit={handleSubmit}>
       {/* Render login form */}
     </form>
   );
-};
+}
 
 export default Login;
 
-// pages/Dashboard.js
+// Dashboard.js
 import React from 'react';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../components/AuthContext';
 
-const Dashboard = () => {
-  const { logout } = useAuth();
-  
+function Dashboard() {
+  const { user, logout } = useAuth();
+
+  function handleLogout() {
+    // Call logout function
+    logout();
+  }
+
   return (
     <div>
-      <h1>Dashboard</h1>
-      <button onClick={logout}>Logout</button>
+      <h1>Welcome, {user.username}!</h1>
+      <button onClick={handleLogout}>Logout</button>
+      {/* Render dashboard content */}
     </div>
   );
-};
+}
 
 export default Dashboard;
 ```
 
-Security Considerations:
-1. Input Validation:
-   - Validate and sanitize all user inputs on the login form to prevent XSS and injection attacks.
+Security Controls:
+1. Input Validation: Implement input validation and sanitization for user inputs, such as username and password, to prevent injection attacks and handle malicious inputs.
 
-2. Authentication:
-   - Implement secure authentication using JWT tokens.
-   - Store JWT securely on the client-side (e.g., using secure cookies or local storage).
-   - Protect against common authentication attacks like brute-force and credential stuffing.
+2. Authentication: Use JWT (JSON Web Token) for secure authentication. Upon successful login, issue a JWT token to the client and include it in subsequent requests to authenticate the user.
 
-3. Authorization:  
-   - Use `PrivateRoute` component to protect sensitive routes and ensure only authenticated users can access them.
+3. Authorization: Implement role-based access control to ensure users can only access resources they are authorized to. Use the `PrivateRoute` component to protect routes that require authentication.
 
-4. Session Management:
-   - Implement secure session management using JWT tokens.
-   - Set appropriate token expiration times and provide a logout mechanism.
+4. Session Management: Store JWT token securely on the client-side (e.g., in an HTTP-only cookie or local storage) and include it in API requests to maintain session state.
 
-5. Data Protection:
-   - Handle sensitive data securely by encrypting it in transit and at rest.
-   - Avoid storing sensitive data on the client-side.
+5. Data Protection: Encrypt sensitive data, such as passwords, using strong encryption algorithms. Avoid storing sensitive data in plain text.
 
-6. Error Handling:
-   - Implement proper error handling and avoid exposing sensitive information in error messages.
+6. Error Handling: Implement proper error handling and provide generic error messages to users to avoid exposing sensitive information.
 
-7. Logging:
-   - Implement secure logging mechanisms to track important events and detect suspicious activities.
+7. Logging: Implement secure logging mechanisms to track user actions and detect suspicious activities. Avoid logging sensitive data.
 
-8. API Security:
-   - Secure the API endpoints by implementing proper authentication and authorization checks.
-   - Use HTTPS to encrypt data in transit.
+8. API Security: Secure API endpoints by implementing rate limiting, input validation, and authentication/authorization checks.
 
-9. Dependency Security:
-   - Keep all dependencies up to date and regularly check for any known vulnerabilities.
-   - Use trusted and well-maintained dependencies.
+9. Dependency Security: Regularly update and patch dependencies to address known vulnerabilities. Use tools like `npm audit` to identify and fix security issues in dependencies.
 
-10. Infrastructure Security:
-    - Ensure the hosting environment is properly secured and configured.
-    - Use security headers like `X-XSS-Protection`, `X-Content-Type-Options`, etc.
+10. Infrastructure Security: Deploy the application on a secure infrastructure with proper network security, access controls, and monitoring in place.
 
-User Experience Considerations:
-- With a high overall experience score of 95 and low friction score of 5, the user experience seems to be positive. 
-- Address the few dead clicks (5) reported in 14% of sessions to further enhance the user experience.
-- Analyze the sessions with the lowest experience scores to identify and address any specific issues.
+To address the identified user experience issues:
+- Investigate the cause of dead clicks and optimize the user interface to reduce friction and improve the overall experience.
+- Analyze the sessions with the lowest experience scores to identify specific pain points and address them in the implementation.
+- Utilize the heatmap data to optimize the placement of important elements and improve user engagement.
 
-Additional Steps:
-- Implement comprehensive security testing, including penetration testing and vulnerability scans.
-- Develop security documentation outlining the implemented controls and best practices followed.
-- Regularly review and update the security measures to stay proactive against emerging threats.
+Security Documentation:
+- Document the implemented security controls, including input validation, authentication, authorization, and data protection measures.
+- Provide guidelines for secure configuration and deployment of the application.
+- Include instructions for secure handling of secrets, such as JWT secret key and database credentials.
 
-Remember to tailor the code and security measures based on the specific requirements and context of your application.
+Security Testing Plan:
+- Perform regular security testing, including penetration testing and vulnerability scanning, to identify and address potential vulnerabilities.
+- Conduct code reviews to ensure adherence to secure coding practices and identify any security flaws.
+- Perform manual testing to validate the effectiveness of implemented security controls and identify any gaps.
+
+Note: The provided code snippet is a simplified example and may require further modifications and enhancements based on the specific requirements of the application. It is crucial to thoroughly test and validate the security of the implemented solution.
