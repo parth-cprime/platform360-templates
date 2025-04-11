@@ -1,38 +1,36 @@
 # Order Management API
 
 ## Project Overview
-This project provides an Order Management API which automatically analyzes incoming feedback for urgent keywords or negative sentiment, routes notifications to the appropriate team member based on the feedback category, allows team members to acknowledge receipt of notifications, and provides a simple dashboard showing pending and acknowledged urgent feedback.
+This project is a React-based order management API. It features a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.
 
 ## Security Considerations
-- Implement JWT token validation for secure authentication
-- Enable CORS with proper configuration for secure cross-origin requests
-- Use Helmet for secure HTTP headers
-- Implement rate limiting to prevent brute-force attacks
-- Encrypt sensitive data to ensure data privacy
-- Implement proper error handling to prevent information leakage
-- Validate all inputs to prevent injection attacks
-- Implement security logging to monitor for potential security threats
+1. The application uses JWT for authentication.
+2. Data is encrypted before being sent to the server.
+3. The application has implemented proper error handling.
+4. All input data is validated.
+5. The application uses security headers.
+6. The application uses secure session management.
+7. The application follows the principle of least privilege.
 
 ## Authentication Method
-This project uses JSON Web Tokens (JWT) for authentication. 
+JSON Web Token (JWT) is used for authentication.
 
 ## Data Sensitivity Level
-The data handled by this application is classified as internal.
+The data sensitivity level is internal.
 
 ## Installation Instructions
-1. Clone the project repository
-2. Install dependencies with `npm install`
-3. Set environment variables as per the `.env.example` file
-4. Run `npm start` to start the application
+1. Clone the repository.
+2. Install the dependencies by running `npm install`.
+3. Run the application by running `npm start`.
 
 ## Security Best Practices Followed
-- All sensitive data is stored in environment variables
-- Proper error handling is implemented to prevent information leakage
-- All inputs are validated and sanitized to prevent injection attacks
-- Security headers are set with Helmet
-- CORS is enabled with proper configuration
-- Rate limiting is implemented to prevent brute-force attacks
-- Sensitive data is encrypted before storage
-- JWT tokens are securely validated
-- Security logging is implemented
-- Principle of least privilege is followed in access controls
+1. Secure defaults were used.
+2. Input validation and sanitization were implemented.
+3. Proper error handling was implemented.
+4. Secure authentication methods were used.
+5. Proper session management was implemented.
+6. Security logging was implemented.
+7. The principle of least privilege was followed.
+8. Secure headers and configurations were used.
+9. All sensitive data is stored in environment variables.
+10. Regular security updates are performed.
