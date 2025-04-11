@@ -1,36 +1,42 @@
 # Order Management API
 
 ## Project Overview
-This project is a React-based order management API. It features a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.
+
+This project is an Order Management API where it is fetching the data and managing the orders for the customers. It is built on React and follows the best security practices during its development.
 
 ## Security Considerations
-1. The application uses JWT for authentication.
-2. Data is encrypted before being sent to the server.
-3. The application has implemented proper error handling.
-4. All input data is validated.
-5. The application uses security headers.
-6. The application uses secure session management.
-7. The application follows the principle of least privilege.
+
+The security considerations taken into account during the development of this project are:
+
+1. Implementation of JWT for secure user authentication.
+2. Input validation and sanitization to prevent injection attacks.
+3. Use of HTTPS for secure communication.
+4. Secure password hashing.
+5. Use of environment variables for sensitive data.
 
 ## Authentication Method
-JSON Web Token (JWT) is used for authentication.
+
+The project uses JSON Web Tokens (JWT) for secure user authentication. 
 
 ## Data Sensitivity Level
-The data sensitivity level is internal.
+
+The data sensitivity level for this project is internal. It means the data used and handled by the application is strictly for internal usage and any exposure could result in significant harm to the business.
 
 ## Installation Instructions
-1. Clone the repository.
-2. Install the dependencies by running `npm install`.
-3. Run the application by running `npm start`.
+
+To install and run the project:
+
+1. Clone the project from the repository.
+2. Install the project dependencies using npm by running `npm install`.
+3. Start the application by running `npm start`.
 
 ## Security Best Practices Followed
-1. Secure defaults were used.
-2. Input validation and sanitization were implemented.
-3. Proper error handling was implemented.
-4. Secure authentication methods were used.
-5. Proper session management was implemented.
-6. Security logging was implemented.
-7. The principle of least privilege was followed.
-8. Secure headers and configurations were used.
-9. All sensitive data is stored in environment variables.
-10. Regular security updates are performed.
+
+1. Secure user authentication using JWT.
+2. Input validation and sanitization to prevent injection attacks.
+3. Use of HTTPS for secure communication.
+4. Secure password hashing.
+5. Use of environment variables for sensitive data.
+6. Implementation of proper error handling.
+7. Use of secure defaults and least privilege principle.
+8. Regular updates for security dependencies.
