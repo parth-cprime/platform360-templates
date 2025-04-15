@@ -1,24 +1,33 @@
 # Order Management API
 
 ## Project Overview
-This project is an order management API. It provides automatic analysis of incoming feedback for keywords or negative sentiment, routing notifications to the appropriate team member based on the feedback category, allowing team members to acknowledge receipt of notifications, and a simple dashboard showing pending and acknowledged urgent feedback.
+This project is an implementation of an Order Management API. It provides an interface for handling customer feedback and automatically sends notifications to the appropriate customer service team member when urgent feedback is received. The system is designed to prioritize responses to urgent issues to improve customer satisfaction.
 
 ## Security Considerations
-We have implemented a number of security measures including proper JWT token validation, secure password hashing, CORS configuration, rate limiting, security headers, encryption of sensitive data, proper error handling, secure session management, validation of all input data, and proper logging.
+The system is developed with a focus on security. It uses JWT for authentication, ensuring that only authorized users can access certain endpoints. All input data is validated and sanitized to prevent injection attacks. In addition, the system uses secure session management, proper error handling, and security logging.
 
 ## Authentication Method
-This API uses JSON Web Tokens (JWT) for authentication. 
+The system uses JWT (Json Web Tokens) for authentication. This provides a secure and reliable method for validating user identities and protecting sensitive data.
 
 ## Data Sensitivity Level
-The data handled by this API is considered to be of internal sensitivity. 
+The data handled by this system is considered to be of medium sensitivity. It includes customer feedback and internal user data. All sensitive data is encrypted and securely stored.
 
 ## Installation Instructions
-To install this project, you will need to clone the repository and install the necessary dependencies. You can do this by running the following commands in your terminal:
-```
-git clone https://github.com/your-repo/order-management-api.git
-cd order-management-api
-npm install
-```
+1. Clone the project repository
+2. Install the necessary dependencies
+3. Set up the database
+4. Configure the necessary environment variables
+5. Run the application
 
 ## Security Best Practices Followed
-This project follows a number of security best practices including the use of environment variables for sensitive data, proper error handling, use of TypeScript for type safety, comprehensive testing, proper logging, following the principle of least privilege, proper session management, secure communication protocols, and regular security updates.
+In the development of this system, we followed a number of security best practices, including:
+1. Implementing proper JWT token validation
+2. Using Spring Security for authentication
+3. Enabling CORS with proper configuration
+4. Implementing rate limiting
+5. Using security headers
+6. Encrypting sensitive data
+7. Implementing proper error handling
+8. Using secure session management
+9. Validating all input data
+10. Implementing proper logging
