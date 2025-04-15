@@ -1,30 +1,19 @@
-```java
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/order")
 public class OrderController {
     
     @Autowired
     private OrderService orderService;
 
-    @GetMapping("/")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    @PostMapping("/feedback")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> submitFeedback(@Valid @RequestBody FeedbackDTO feedbackDTO) {
+        // Implementation
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.createOrder(order));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable long id, @Valid @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.updateOrder(id, order));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrder(@PathVariable long id) {
-        orderService.deleteOrder(id);
-        return ResponseEntity.ok().build();
+    @GetMapping("/notifications")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<?> getNotifications() {
+        // Implementation
     }
 }
-```
