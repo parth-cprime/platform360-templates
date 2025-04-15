@@ -77,3 +77,22 @@ MIT License
 
 ## Contact
 For any queries, please send an email to support@example.com
+
+## CODE Generation (2025-04-15T22:29:20.660Z)
+- **Task ID:** P360-44
+- **Language:** react
+- **Security Level:** medium
+- **Auth Method:** jwt
+- **Data Sensitivity:** internal
+- **Generated Files:** 8
+- **Full Prompt:** [View Details](./.prompts/code-2025-04-15T22:29:20.660Z.json)
+
+### Generated Files:
+- p360/p360_44/react/README.md
+- p360/p360_44/react/src/context/AuthContext.js
+- p360/p360_44/react/src/services/api.js
+- p360/p360_44/react/src/components/ProtectedRoute.js
+- p360/p360_44/react/src/utils/security.js
+- p360/p360_44/react/src/hooks/useAuth.js
+- p360/p360_44/react/src/pages/Login.js
+- p360/p360_44/react/package.json
