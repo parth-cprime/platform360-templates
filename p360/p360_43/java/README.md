@@ -105,3 +105,22 @@ MIT License
 
 ## Contact
 For any queries, contact us at support@company.com
+
+## CODE Generation (2025-04-16T14:36:03.043Z)
+- **Task ID:** P360-43
+- **Language:** java
+- **Security Level:** medium
+- **Auth Method:** jwt
+- **Data Sensitivity:** internal
+- **Generated Files:** 8
+- **Full Prompt:** [View Details](./.prompts/code-2025-04-16T14:36:03.043Z.json)
+
+### Generated Files:
+- p360/p360_43/java/README.md
+- p360/p360_43/java/src/main/java/com/company/config/SecurityConfig.java
+- p360/p360_43/java/src/main/java/com/company/security/JwtTokenProvider.java
+- p360/p360_43/java/src/main/java/com/company/controller/ApiController.java
+- p360/p360_43/java/src/main/java/com/company/service/DataService.java
+- p360/p360_43/java/src/main/java/com/company/exception/GlobalExceptionHandler.java
+- p360/p360_43/java/src/main/resources/application.properties
+- p360/p360_43/java/pom.xml
