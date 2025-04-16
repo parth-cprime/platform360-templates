@@ -101,3 +101,22 @@ MIT
 
 ## Contact
 For any questions, please reach out to `developer@example.com`.
+
+## CODE Generation (2025-04-16T14:08:14.134Z)
+- **Task ID:** P360-43
+- **Language:** react
+- **Security Level:** medium
+- **Auth Method:** jwt
+- **Data Sensitivity:** internal
+- **Generated Files:** 8
+- **Full Prompt:** [View Details](./.prompts/code-2025-04-16T14:08:14.134Z.json)
+
+### Generated Files:
+- p360/p360_43/react/README.md
+- p360/p360_43/react/src/context/AuthContext.js
+- p360/p360_43/react/src/services/api.js
+- p360/p360_43/react/src/components/ProtectedRoute.js
+- p360/p360_43/react/src/utils/security.js
+- p360/p360_43/react/src/hooks/useAuth.js
+- p360/p360_43/react/src/pages/Login.js
+- p360/p360_43/react/package.json
