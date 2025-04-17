@@ -1,4 +1,4 @@
-# Customer Feedback Alert System
+# Order Management API
 
 ## Business Requirements
 ### Task Overview
@@ -7,67 +7,58 @@
 - **Status**: To Do
 
 ### Requirements
-Create an order management API where itBackground
+This project aims to create an order management API that serves as a notification system for the customer service team. The main problem that it addresses is the lack of an automated way for the team to be notified when urgent issues are reported. As a result, team members must regularly check the system, causing delays in addressing time-sensitive customer concerns.
 
-The customer service team currently receives feedback through a web form, but has no automated way to be notified when urgent issues are reported. Team members must regularly check the system, causing delays in addressing time-sensitive customer concerns.
-
-#### Business Requirement
-
-Create a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.
-
-#### Key Features
-
+### Key Features
 1. Automatically analyze incoming feedback for urgent keywords or negative sentiment
 2. Route notifications to the appropriate team member based on the feedback category
 3. Allow team members to acknowledge receipt of notifications
 4. Provide a simple dashboard showing pending and acknowledged urgent feedback
 
-#### Success Criteria
-
-* Urgent feedback notifications are sent within 2 minutes of submission
-* Team members acknowledge receipt of 95% of urgent notifications within 15 minutes during business hours
-* Customer satisfaction for urgent issues improves by 10% within three months is fetching 
-
-### Key Features
-- Sentiment Analysis
-- Notification Routing
-- Notification Acknowledgement
-- Dashboard
-
 ### Success Criteria
-- Timely Delivery of Notifications
-- High Acknowledgement Rate
-- Improved Customer Satisfaction
+1. Urgent feedback notifications are sent within 2 minutes of submission
+2. Team members acknowledge receipt of 95% of urgent notifications within 15 minutes during business hours
+3. Customer satisfaction for urgent issues improves by 10% within three months
 
 ## Overview
-This project aims to improve customer service responsiveness by alerting the team members of urgent issues as soon as they are reported. The system will analyze the sentiment of the feedback, route the notifications to the appropriate team members, allow acknowledgment of notifications, and display the status on a dashboard.
+This project is an order management API that acts as a notification system. It is intended to be used by the customer service team to quickly and efficiently handle urgent customer issues reported through web forms.
 
 ## Technical Stack
-- Programming Language: node
-- Frameworks: Express
+- Programming Language: Node.js
+- Frameworks: Express.js
 - Database: MongoDB
 - External Services: None
 
 ## Architecture
-The system is built on Node.js using the Express framework. It uses MongoDB as the database to store feedback and notification records. The sentiment analysis is done using a built-in utility. Notifications are routed based on predefined rules.
+This application is built with a modular architecture that separates concerns into different parts of the application:
+- Controllers: Handle incoming requests and send responses
+- Models: Define data structures
+- Routes: Define API endpoints
+- Services: Handle business logic
+- Middleware: Handle tasks such as authentication and error handling
+- Config: Contains configuration settings
+- Utils: Contains utility functions such as logging and data validation
 
 ## Setup and Installation
 ### Prerequisites
-- Node.js
-- MongoDB
+- Node.js v12.18.2 or later
+- MongoDB v4.4.1 or later
+- A JWT_SECRET environment variable for JWT authentication
 
 ### Installation Steps
-1. Clone the repository
-2. Install dependencies using `npm install`
-3. Start the MongoDB server
+1. Clone the repository to your local machine
+2. Run `npm install` to install all necessary dependencies
+3. Start your MongoDB server
+4. Run `npm start` to start the application server
 
 ### Configuration
-- Set the `DB_URI` environment variable to your MongoDB connection string
+- Set the JWT_SECRET environment variable to a secure, random string
+- Set the MONGODB_URI environment variable to your MongoDB connection string
 
 ## Development
 ### Building the Project
 ```bash
-npm run build
+npm install
 ```
 
 ### Running the Project
@@ -76,68 +67,47 @@ npm start
 ```
 
 ### Testing
-Use `npm test` to run the test suite
+```bash
+npm test
+```
 
 ## Deployment
 ### Prerequisites
 - A server with Node.js and MongoDB installed
+- A secure way to store environment variables
 
 ### Deployment Steps
-1. Clone the repository on the server
-2. Run `npm install` to install dependencies
-3. Set the `DB_URI` environment variable to your MongoDB connection string
-4. Run `npm start` to start the server
+1. Push your code to a Git repository
+2. On your server, clone the repository
+3. Run `npm install` to install dependencies
+4. Set your environment variables
+5. Run `npm start` to start the application server
 
 ## Security
 ### Authentication
-The system uses JWT for authentication. Tokens are issued upon successful login.
+This application uses JWT for authentication. Users must log in to receive a token that they must provide in the Authorization header of their requests.
 
 ### Authorization
-Different roles have different access levels. The middleware checks the role of the authenticated user before allowing access to certain routes.
+This application uses role-based authorization. Some endpoints are only accessible by users with certain roles.
 
 ### Data Protection
-Sensitive data is encrypted using bcrypt. JWT tokens are signed and verified to ensure data integrity.
+Passwords are hashed using bcrypt before being stored in the database. Sensitive data is encrypted using the aes-256-cbc algorithm.
 
 ## API Documentation
 ### Endpoints
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| /feedback | POST | Submit feedback |
-| /notifications | GET | Retrieve notifications |
-| /acknowledge | POST | Acknowledge a notification |
-
-### Request/Response Format
-Example request/response format details will be provided in the API documentation.
+| /api/protected | GET | Returns a message if the user is authenticated |
 
 ## Troubleshooting
 ### Common Issues
-- **Issue**: Server not starting
-  **Solution**: Ensure MongoDB is running and the connection string is correct
-
-### Debugging
-Use the `npm run debug` command to start the server in debug mode.
+- **Issue**: JWT token is missing or invalid
+  - **Solution**: Make sure you are providing a valid JWT token in the Authorization header of your requests
+- **Issue**: Database connection failed
+  - **Solution**: Check your MongoDB connection string and ensure that your MongoDB server is running
 
 ## License
-MIT License
+MIT
 
 ## Contact
-For more information, please contact [your contact info].
-
-## CODE Generation (2025-04-15T22:34:05.535Z)
-- **Task ID:** P360-43
-- **Language:** node
-- **Security Level:** medium
-- **Auth Method:** jwt
-- **Data Sensitivity:** internal
-- **Generated Files:** 8
-- **Full Prompt:** [View Details](./.prompts/code-2025-04-15T22:34:05.535Z.json)
-
-### Generated Files:
-- p360/p360_43/node/README.md
-- p360/p360_43/node/src/config/security.js
-- p360/p360_43/node/src/middleware/auth.js
-- p360/p360_43/node/src/controllers/apiController.js
-- p360/p360_43/node/src/routes/api.js
-- p360/p360_43/node/src/services/dataService.js
-- p360/p360_43/node/src/utils/logger.js
-- p360/p360_43/node/package.json
+For any queries, please contact: your-email@example.com
