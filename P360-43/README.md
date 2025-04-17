@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T17:34:01.494Z
+- Generated: 2025-04-17T17:37:19.828Z
 
 ## Parameters
 - Security Level: medium
@@ -11,10 +11,15 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- project/src/services/authService.js
-- project/src/services/orderService.js
-- project/src/components/OrderComponent.js
-- project/src/tests/orderComponent.test.js
+- src/App.js
+- src/context/FeedbackContext.js
+- src/services/FeedbackService.js
+- src/pages/Dashboard.js
+- src/pages/FeedbackForm.js
+- src/components/FeedbackItem.js
+- src/utils/auth.js
+- src/utils/errorHandler.js
+- README.md
 
 ## Prompt
 ```
