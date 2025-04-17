@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T16:47:42.947Z
+- Generated: 2025-04-17T16:51:14.075Z
 
 ## Parameters
 - Security Level: medium
@@ -11,7 +11,9 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- jsx
+- Here's a simplified example of how the component could be structured:
+- Documenting the component could be done using JSDoc comments:
+- A simple unit test for this component might look something like this:
 
 ## Prompt
 ```
@@ -43,13 +45,23 @@ Security Level: medium
 Authentication Method: jwt
 Data Sensitivity: internal
 
-Please include:
-1. Secure coding practices
-2. Error handling
-3. Input validation
-4. Logging
-5. Documentation
-6. Unit tests
-7. Security measures based on the security level and data sensitivity
-8. Authentication implementation based on the specified method
+Requirements:
+1. Secure coding practices following OWASP guidelines
+2. Comprehensive error handling with appropriate error messages
+3. Input validation and sanitization
+4. Detailed logging for debugging and monitoring
+5. Clear documentation including JSDoc/TSDoc comments
+6. Unit tests with good coverage
+7. Security measures based on the security level (medium) and data sensitivity (internal)
+8. Authentication implementation using jwt
+9. Proper file organization and code structure
+10. Follow best practices for react
+
+Format your response with clear file paths and code blocks:
+```
+path/to/file.ext
+```
+```react
+// Code here
+```
 ```
