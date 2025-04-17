@@ -1,0 +1,11 @@
+/**
+ * @file src/components/OrderManagement.jsx
+ * @author Your Name <your.email@example.com>
+ * @version 1.0
+ */
+
+/**
+ * @component
+ * @description Fetches and displays a single order. Uses JWT authentication.
+ */
+...
