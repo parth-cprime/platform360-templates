@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T16:51:14.075Z
+- Generated: 2025-04-17T17:12:33.753Z
 
 ## Parameters
 - Security Level: medium
@@ -11,9 +11,9 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- Here's a simplified example of how the component could be structured:
-- Documenting the component could be done using JSDoc comments:
-- A simple unit test for this component might look something like this:
+- Let's create the `OrderManagement` component:
+- Next, let's create the `Dashboard` and `Login` components:
+- Lastly, let's add this component to the entry point of the application:
 
 ## Prompt
 ```
@@ -45,17 +45,25 @@ Security Level: medium
 Authentication Method: jwt
 Data Sensitivity: internal
 
+Project Structure and Standards:
+- First, check for templates in https://github.com/parth-cprime/platform360-templates/tree/main/templates
+- If templates exist, follow them strictly
+- If templates don't exist, use industry best practices for:
+  * Project structure
+  * Security standards
+  * Testing practices
+  * Code quality
+  * Documentation
+
 Requirements:
-1. Secure coding practices following OWASP guidelines
-2. Comprehensive error handling with appropriate error messages
-3. Input validation and sanitization
-4. Detailed logging for debugging and monitoring
-5. Clear documentation including JSDoc/TSDoc comments
-6. Unit tests with good coverage
-7. Security measures based on the security level (medium) and data sensitivity (internal)
-8. Authentication implementation using jwt
-9. Proper file organization and code structure
-10. Follow best practices for react
+1. Follow the highest security standards based on security level (medium)
+2. Implement appropriate data protection based on sensitivity (internal)
+3. Use proper authentication method (jwt)
+4. Include comprehensive error handling
+5. Add detailed logging
+6. Write clear documentation
+7. Include unit tests
+8. Follow react best practices
 
 Format your response with clear file paths and code blocks:
 ```
