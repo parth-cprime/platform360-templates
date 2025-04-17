@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T17:24:48.013Z
+- Generated: 2025-04-17T17:28:46.923Z
 
 ## Parameters
 - Security Level: medium
@@ -11,9 +11,10 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- Here is a basic implementation of your requirements. We will create two react components: one for the dashboard and another for the feedback form.
-- export default Dashboard;
-- export default FeedbackForm;
+- First, we should start with the main entry point of the application:
+- src/context/AuthProvider.js
+- The `OrderManagement` page component could look something like this:
+- src/services/orderService.js
 
 ## Prompt
 ```
@@ -45,15 +46,26 @@ Security Level: medium
 Authentication Method: jwt
 Data Sensitivity: internal
 
-Project Structure and Standards:
-- First, check for templates in https://github.com/parth-cprime/platform360-templates/tree/main/templates
-- If templates exist, follow them strictly
-- If templates don't exist, use industry best practices for:
-  * Project structure
-  * Security standards
-  * Testing practices
-  * Code quality
-  * Documentation
+
+# react Project Structure
+
+## Project Structure
+```
+project/
+├── src/
+│   ├── components/        # Reusable components
+│   ├── pages/            # Page components
+│   ├── services/         # API services
+│   ├── hooks/            # Custom hooks
+│   ├── context/          # Context providers
+│   ├── utils/            # Utility functions
+│   ├── assets/           # Static assets
+│   └── App.js            # Main application
+├── public/               # Public files
+├── package.json          # Project dependencies
+└── README.md            # Project documentation
+```
+
 
 Requirements:
 1. Follow the highest security standards based on security level (medium)
