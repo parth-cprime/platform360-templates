@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T17:28:46.923Z
+- Generated: 2025-04-17T17:34:01.494Z
 
 ## Parameters
 - Security Level: medium
@@ -11,10 +11,10 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- First, we should start with the main entry point of the application:
-- src/context/AuthProvider.js
-- The `OrderManagement` page component could look something like this:
-- src/services/orderService.js
+- project/src/services/authService.js
+- project/src/services/orderService.js
+- project/src/components/OrderComponent.js
+- project/src/tests/orderComponent.test.js
 
 ## Prompt
 ```
