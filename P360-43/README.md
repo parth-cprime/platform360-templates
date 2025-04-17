@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T17:37:19.828Z
+- Generated: 2025-04-17T17:44:50.271Z
 
 ## Parameters
 - Security Level: medium
@@ -11,15 +11,11 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- src/App.js
-- src/context/FeedbackContext.js
-- src/services/FeedbackService.js
-- src/pages/Dashboard.js
-- src/pages/FeedbackForm.js
-- src/components/FeedbackItem.js
-- src/utils/auth.js
-- src/utils/errorHandler.js
-- README.md
+- project/src/services/api.js
+- project/src/hooks/useFetch.js
+- project/src/components/Notification.js
+- project/src/components/Dashboard.js
+- project/src/App.js
 
 ## Prompt
 ```
