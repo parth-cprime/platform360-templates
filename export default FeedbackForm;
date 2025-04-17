@@ -1,0 +1,6 @@
+- Implementing API calls in the `useEffect` hook in `Dashboard.js` and `handleSubmit` function in `FeedbackForm.js`.
+- Adding authentication and error handling for these API calls.
+- Ensuring data protection and security standards.
+- Adding detailed logging and clear documentation.
+- Writing unit tests for these components.
+- Implementing the rest of the features as per the business requirements and success criteria.
