@@ -1,0 +1,25 @@
+// __tests__/OrderManagement.test.js
+
+import { render, screen, fireEvent } from '@testing-library/react';
+import OrderManagement from '../components/OrderManagement';
+
+test('fetches and displays order on button click', async () => {
+  // mock successful fetch
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: '123',
+          status: 'delivered',
+        }),
+    })
+  );
+
+  render(<OrderManagement />);
+
+  fireEvent.click(screen.getByText('Fetch Order'));
+
+  const order = await screen.findByText('Order ID: 123');
+  expect(order).toBeInTheDocument();
+});
