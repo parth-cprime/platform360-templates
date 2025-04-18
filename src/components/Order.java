@@ -1,14 +1,23 @@
-import javax.validation.constraints.NotNull;
+package src.components;
 
 public class Order {
+    private Integer id;
+    private String description;
 
-    @NotNull(message = "Order ID is required")
-    private String orderId;
+    // Getters and Setters
+    public Integer getId() {
+        return id;
+    }
 
-    @NotNull(message = "Customer ID is required")
-    private String customerId;
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    // Other fields, getters and setters...
+    public String getDescription() {
+        return description;
+    }
 
-    // Override equals and hashCode methods as needed
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
