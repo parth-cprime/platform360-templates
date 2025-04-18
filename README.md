@@ -26,12 +26,13 @@ h2. Success Criteria
 - Language: java
 
 ## Generated Files
-- src/services/OrderManagementService.java
-- src/components/Order.java
-- src/utils/ServiceException.java
-- src/tests/OrderManagementServiceTest.java
+- project/src/services/SecurityConfig.java
+- project/src/services/JwtTokenProvider.java
+- project/src/components/UserController.java
+- project/src/components/UserDTO.java
+- project/src/services/GlobalExceptionHandler.java
 
 ## Generation Parameters
 - Security Level: high
 - Data Sensitivity: internal
-- Generated at: 2025-04-18T15:25:23.810Z
+- Generated at: 2025-04-18T15:28:34.778Z
