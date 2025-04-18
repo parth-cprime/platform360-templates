@@ -3,7 +3,7 @@
 ## Task Details
 - Task ID: P360-43
 - Language: react
-- Generated: 2025-04-17T20:07:08.836Z
+- Generated: 2025-04-18T14:25:03.398Z
 
 ## Parameters
 - Security Level: medium
@@ -11,13 +11,10 @@
 - Data Sensitivity: internal
 
 ## Generated Files
-- src/components/NotificationComponent.jsx
-- src/services/authService.js
-- src/utils/errorHandler.js
-- src/utils/logger.js
-- src/hooks/useAuth.js
-- src/services/notificationService.js
-- README.md
+- src/components/NotificationSystem.js
+- src/context/FeedbackContext.js
+- src/pages/Dashboard.js
+- src/App.js
 
 ## Prompt
 ```
