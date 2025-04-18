@@ -1,49 +1,34 @@
 package com.example.ordermanagement;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.logging.Logger;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 public class OrderController {
 
     private final OrderService orderService;
+    private static final Logger LOGGER = Logger.getLogger(OrderController.class.getName());
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
-    // Create a new order
-    @PostMapping("")
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.createOrder(order));
+    @PostMapping
+    public ResponseEntity<Void> createOrder(@Valid @RequestBody Order order) {
+        try {
+            orderService.createOrder(order);
+            LOGGER.info("Order created successfully");
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (Exception e) {
+            LOGGER.severe("Error occurred while creating order: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    // Fetch all orders
-    @GetMapping("")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-    }
-
-    // Fetch a single order by id
-    @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable(value = "id") Long orderId) {
-        return ResponseEntity.ok(orderService.getOrderById(orderId));
-    }
-
-    // Update an order by id
-    @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable(value = "id") Long orderId, 
-                                             @Valid @RequestBody Order orderDetails) {
-        return ResponseEntity.ok(orderService.updateOrder(orderId, orderDetails));
-    }
-
-    // Delete an order by id
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrder(@PathVariable(value = "id") Long orderId) {
-        orderService.deleteOrder(orderId);
-        return ResponseEntity.ok().build();
-    }
+    // Other RESTful APIs handling
 }
