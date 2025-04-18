@@ -1,0 +1,10 @@
+[
+  {
+    "timestamp": "2025-04-18T15-46-05-412Z",
+    "language": "react",
+    "securityLevel": "medium",
+    "authMethod": "jwt",
+    "dataSensitivity": "internal",
+    "path": "undefined/P360-43/react-2025-04-18T15-46-05-412Z"
+  }
+]
