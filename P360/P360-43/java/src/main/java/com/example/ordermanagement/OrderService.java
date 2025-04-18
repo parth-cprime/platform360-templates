@@ -2,41 +2,17 @@ package com.example.ordermanagement;
 
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.util.List;
+import java.util.logging.Logger;
 
 @Service
-@Transactional
 public class OrderService {
 
-    private final OrderRepository orderRepository;
+    private static final Logger LOGGER = Logger.getLogger(OrderService.class.getName());
 
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
+    public void createOrder(Order order) {
+        // Logic to create order
+        // For example, saving the order to the database
     }
 
-    public Order createOrder(Order order) {
-        // Add your business logic here
-        return orderRepository.save(order);
-    }
-
-    public List<Order> getAllOrders() {
-        // Add your business logic here
-        return orderRepository.findAll();
-    }
-
-    public Order getOrderById(Long orderId) {
-        // Add your business logic here
-        return orderRepository.findById(orderId);
-    }
-
-    public Order updateOrder(Long orderId, Order orderDetails) {
-        // Add your business logic here
-        return orderRepository.save(orderDetails);
-    }
-
-    public void deleteOrder(Long orderId) {
-        // Add your business logic here
-        orderRepository.deleteById(orderId);
-    }
+    // Other service methods
 }
