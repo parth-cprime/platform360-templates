@@ -1,53 +1,35 @@
-# Platform360 Templates
+# Task P360-43 - Generated Code
 
-This repository contains templates and prompts for Platform360's automated code generation system.
+## Task Details
+- Summary: P360 sample business requirement task
+- Description: Create a order management API where itBackground
 
-## Directory Structure
+The customer service team currently receives feedback through a web form, but has no automated way to be notified when urgent issues are reported. Team members must regularly check the system, causing delays in addressing time-sensitive customer concerns.
 
-### Templates
-- `templates/code/`: Code implementation templates
-  - Feature implementation
-  - API endpoints
-  - Database schemas
-- `templates/docs/`: Documentation templates
-- `templates/validation/`: Input validation templates
-- `templates/testing/`: Testing templates
-  - Unit tests
-  - Integration tests
-- `templates/versioning/`: Version management templates
-- `templates/security/`: Security implementation templates
-  - Node.js security
-  - Java security
-  - React security
+h2. Business Requirement
 
-### Prompts
-- `prompts/security/`: Security-focused prompts
-  - Node.js security prompts
-  - Java security prompts
-  - React security prompts
+Create a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.
 
-## Security Features
-- OWASP Top 10 compliance
-- Authentication and authorization
-- Input validation
-- Error handling
-- Secure configuration
-- Dependency security
-- Infrastructure security
+h2. Key Features
 
-## Versioning
-Each template is versioned independently. The version information is stored in:
-- Individual template files
-- `templates/versioning/config.json`
+# Automatically analyze incoming feedback for urgent keywords or negative sentiment
+# Route notifications to the appropriate team member based on the feedback category
+# Allow team members to acknowledge receipt of notifications
+# Provide a simple dashboard showing pending and acknowledged urgent feedback
 
-## Usage
-1. Select appropriate template from the `templates/` directory
-2. Choose corresponding prompt from `prompts/` directory
-3. Use with Platform360's code generation system
+h2. Success Criteria
 
-## Contributing
-1. Fork the repository
-2. Create a new branch
-3. Add your templates/prompts
-4. Update version information
-5. Submit a pull request
+* Urgent feedback notifications are sent within 2 minutes of submission
+* Team members acknowledge receipt of 95% of urgent notifications within 15 minutes during business hours
+* Customer satisfaction for urgent issues improves by 10% within three months is fetching 
+- Project Key: undefined
+- Language: java
+
+## Generated Files
+- project/src/services/OrderManagementService.java
+- project/src/test/OrderManagementServiceTest.java
+
+## Generation Parameters
+- Security Level: high
+- Data Sensitivity: internal
+- Generated at: 2025-04-18T15:21:58.713Z
