@@ -1,23 +1,14 @@
 package com.example.ordermanagement;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
 
-@Entity
-@Table(name = "orders")
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @NotBlank
-    @Size(max = 100)
-    private String title;
+    @NotNull
+    private String id;
 
-    @NotBlank
-    @Size(max = 250)
-    private String description;
+    @NotNull
+    private String customerId;
 
-    // getters and setters
+    // Other fields and corresponding getters and setters
 }
