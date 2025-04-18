@@ -1,29 +1,32 @@
-import org.springframework.stereotype.Service;
+package src.services;
+
+import src.components.Order;
+import src.utils.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
-
-import java.util.logging.Logger;
+import org.springframework.stereotype.Service;
 
 @Service
 public class OrderManagementService {
 
-    private static final Logger LOGGER = Logger.getLogger(OrderManagementService.class.getName());
-
-    private final OAuth2RestTemplate restTemplate;
-
     @Autowired
-    public OrderManagementService(OAuth2ProtectedResourceDetails resourceDetails) {
-        this.restTemplate = new OAuth2RestTemplate(resourceDetails);
+    private OAuth2RestTemplate restTemplate;
+
+    // Method to fetch orders
+    public Order fetchOrder(Integer id) throws ServiceException {
+        try {
+            return restTemplate.getForObject("/api/order/" + id, Order.class);
+        } catch (Exception ex) {
+            throw new ServiceException("Error fetching order", ex);
+        }
     }
 
-    public void processOrder(Order order) {
+    // Method to acknowledge receipt of order
+    public void acknowledgeOrder(Integer id) throws ServiceException {
         try {
-            restTemplate.postForEntity("/api/orders", order, Void.class);
-            LOGGER.info("Order processed");
-        } catch (Exception e) {
-            LOGGER.severe("Error processing order: " + e.getMessage());
-            throw new ServiceException("Error processing order", e);
+            restTemplate.postForEntity("/api/order/acknowledge/" + id, null, Void.class);
+        } catch (Exception ex) {
+            throw new ServiceException("Error acknowledging order", ex);
         }
     }
 }
