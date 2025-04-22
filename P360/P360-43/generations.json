@@ -86,5 +86,13 @@
     "authMethod": "jwt",
     "dataSensitivity": "internal",
     "path": "P360/P360-43/react/2025-04-22T16-19-25-090Z"
+  },
+  {
+    "timestamp": "2025-04-22T16-23-39-925Z",
+    "language": "java",
+    "securityLevel": "high",
+    "authMethod": "oauth",
+    "dataSensitivity": "internal",
+    "path": "P360/P360-43/java/2025-04-22T16-23-39-925Z"
   }
 ]
