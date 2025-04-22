@@ -1,0 +1,45 @@
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import javax.validation.ValidationException;
+import org.springframework.security.core.AuthenticationException;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Validation Error",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "Authentication Error",
+            ex.getMessage(),
+            HttpStatus.UNAUTHORIZED
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    private class ErrorResponse {
+        private String error;
+        private String message;
+        private HttpStatus httpStatus;
+
+        public ErrorResponse(String error, String message, HttpStatus httpStatus) {
+            this.error = error;
+            this.message = message;
+            this.httpStatus = httpStatus;
+        }
+    }
+}
+```
