@@ -1,0 +1,20 @@
+// File: src/pages/MarketingPage.js
+import React, { useEffect, useState } from 'react';
+import { fetchMarketingData } from '../services/marketingService';
+// ...
+
+const MarketingPage = () => {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        fetchMarketingData().then(setData);
+    }, []);
+
+    if (!data) {
+        return <div>Loading...</div>;  // Or a loading spinner, etc.
+    }
+
+    return (
+        // ...
+    );
+};
