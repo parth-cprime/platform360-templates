@@ -1,0 +1,23 @@
+{
+  "taskId": "P360-43",
+  "projectKey": "P360",
+  "language": "react",
+  "securityLevel": "medium",
+  "dataSensitivity": "internal",
+  "timestamp": "2025-04-24T16:11:22.639Z",
+  "files": [
+    "src/Here's an example of how you can implement the required features in React."
+  ],
+  "prompt": "\n            Task Context: \n                Task ID: P360-43\n                Summary: P360 sample business requirement task\n                Description: Create a order management API where itBackground\n\nThe customer service team currently receives feedback through a web form, but has no automated way to be notified when urgent issues are reported. Team members must regularly check the system, causing delays in addressing time-sensitive customer concerns.\n\nh2. Business Requirement\n\nCreate a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.\n\nh2. Key Features\n\n# Automatically analyze incoming feedback for urgent keywords or negative sentiment\n# Route notifications to the appropriate team member based on the feedback category\n# Allow team members to acknowledge receipt of notifications\n# Provide a simple dashboard showing pending and acknowledged urgent feedback\n\nh2. Success Criteria\n\n* Urgent feedback notifications are sent within 2 minutes of submission\n* Team members acknowledge receipt of 95% of urgent notifications within 15 minutes during business hours\n* Customer satisfaction for urgent issues improves by 10% within three months is fetching \n                Status: To Do\n                Priority: Medium\n            \n            Project Structure: \n# React Project Structure\nproject/\n├── src/\n│   ├── components/\n│   │   ├── pages/\n│   │   └── hooks/\n│   │   └── context/\n│   │   └── services/\n│   │   └── utils/\n│   │   └── App.tsx\n│   ├── public/\n│   ├── package.json\n│   └── README.md\n\n            Security Requirements: \nMedium Security Requirements:\n- Strong input validation\n- Comprehensive error handling\n- JWT authentication\n- Role-based access control\n- Secure logging\n- Rate limiting\n- CORS protection\n\n            Language: react\n            Security Level: medium\n            Please generate code that meets these requirements.\n        ",
+  "parameters": {
+    "securityLevel": "medium",
+    "authMethod": "jwt",
+    "dataSensitivity": "internal"
+  },
+  "taskDetails": {
+    "summary": "P360 sample business requirement task",
+    "description": "Create a order management API where itBackground\n\nThe customer service team currently receives feedback through a web form, but has no automated way to be notified when urgent issues are reported. Team members must regularly check the system, causing delays in addressing time-sensitive customer concerns.\n\nh2. Business Requirement\n\nCreate a notification system that alerts the appropriate customer service team member when customer feedback requiring immediate attention is submitted.\n\nh2. Key Features\n\n# Automatically analyze incoming feedback for urgent keywords or negative sentiment\n# Route notifications to the appropriate team member based on the feedback category\n# Allow team members to acknowledge receipt of notifications\n# Provide a simple dashboard showing pending and acknowledged urgent feedback\n\nh2. Success Criteria\n\n* Urgent feedback notifications are sent within 2 minutes of submission\n* Team members acknowledge receipt of 95% of urgent notifications within 15 minutes during business hours\n* Customer satisfaction for urgent issues improves by 10% within three months is fetching ",
+    "status": "To Do",
+    "priority": "Medium"
+  }
+}
