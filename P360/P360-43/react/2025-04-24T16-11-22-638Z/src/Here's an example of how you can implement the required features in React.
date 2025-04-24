@@ -1,0 +1,80 @@
+//src/components/services/FeedbackService.ts
+import axios from 'axios';
+
+class FeedbackService {
+    API_URL = process.env.REACT_APP_API_URL;
+
+    getFeedbacks = async () => {
+        const response = await axios.get(`${this.API_URL}/feedbacks`);
+        return response.data;
+    }
+
+    createFeedback = async (feedback: any) => {
+        const response = await axios.post(`${this.API_URL}/feedbacks`, feedback);
+        return response.data;
+    }
+}
+
+export default new FeedbackService();
+
+//src/components/context/FeedbackContext.tsx
+import React, { createContext, useState } from "react";
+import FeedbackService from "../services/FeedbackService";
+
+export const FeedbackContext = createContext();
+
+export const FeedbackProvider = (props) => {
+    const [feedbacks, setFeedbacks] = useState([]);
+    const [pendingFeedbacks, setPendingFeedbacks] = useState([]);
+    const [acknowledgedFeedbacks, setAcknowledgedFeedbacks] = useState([]);
+
+    const getFeedbacks = async () => {
+        const feedbacks = await FeedbackService.getFeedbacks();
+        setFeedbacks(feedbacks);
+        setPendingFeedbacks(feedbacks.filter(f => f.status === 'pending'));
+        setAcknowledgedFeedbacks(feedbacks.filter(f => f.status === 'acknowledged'));
+    }
+
+    const createFeedback = async (feedback) => {
+        await FeedbackService.createFeedback(feedback);
+        getFeedbacks();
+    }
+
+    return (
+        <FeedbackContext.Provider value={{ feedbacks, pendingFeedbacks, acknowledgedFeedbacks, createFeedback }}>
+            {props.children}
+        </FeedbackContext.Provider>
+    );
+};
+
+//src/components/pages/Dashboard.tsx
+import React, { useContext, useEffect } from 'react';
+import { FeedbackContext } from '../context/FeedbackContext';
+
+const Dashboard = () => {
+    const { feedbacks, getFeedbacks, acknowledgedFeedbacks, pendingFeedbacks } = useContext(FeedbackContext);
+
+    useEffect(() => {
+        getFeedbacks();
+    }, []);
+
+    return (
+        <div>
+            <h2>Pending Feedbacks</h2>
+            {pendingFeedbacks.map(feedback => (
+                <div key={feedback.id}>
+                    <p>{feedback.content}</p>
+                </div>
+            ))}
+
+            <h2>Acknowledged Feedbacks</h2>
+            {acknowledgedFeedbacks.map(feedback => (
+                <div key={feedback.id}>
+                    <p>{feedback.content}</p>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export default Dashboard;
