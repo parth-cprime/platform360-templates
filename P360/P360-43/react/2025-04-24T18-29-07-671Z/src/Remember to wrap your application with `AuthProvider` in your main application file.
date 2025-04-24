@@ -1,0 +1,12 @@
+// src/App.js
+import AuthProvider from './context/authContext';
+
+const App = () => {
+    return (
+        <AuthProvider>
+            {/* Your routes */}
+        </AuthProvider>
+    );
+};
+
+export default App;
