@@ -1,0 +1,22 @@
+import React from 'react';
+import { useNotifications } from '../context/NotificationContext';
+
+const Dashboard = () => {
+    const { notifications, acknowledgeNotification } = useNotifications();
+
+    return (
+        <div>
+            <h2>Urgent Feedback</h2>
+            <ul>
+                {notifications.map((notification) =>
+                    <li key={notification.id}>
+                        {notification.message}
+                        {!notification.acknowledged && (
+                            <button onClick={() => acknowledgeNotification(notification.id)}>Acknowledge</button>
+                        )}
+                    </li>
+                )}
+            </ul>
+        </div>
+    );
+};
