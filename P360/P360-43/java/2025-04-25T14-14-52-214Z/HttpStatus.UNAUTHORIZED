@@ -1,0 +1,2 @@
+### Notes
+This is a foundational approach to structuring and implementing the specified requirements. In a real-world scenario, you would need to expand upon this with actual logic for handling feedback, determining urgency, sending notifications, and more. Additionally, integrating with OAuth2 for authentication, setting up database connections, and configuring application properties for JWT settings are essential steps not covered in detail here.
