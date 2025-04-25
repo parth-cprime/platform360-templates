@@ -1,0 +1,6 @@
+JWT_SECRET=YourJWTSecretHere
+MONGO_URI=YourMongoDBConnectionStringHere
+MAIL_SERVICE=YourEmailServiceProvider
+MAIL_USERNAME=YourEmailUsername
+MAIL_PASSWORD=YourEmailPassword
+ALLOWED_ORIGINS=http://localhost:3000
