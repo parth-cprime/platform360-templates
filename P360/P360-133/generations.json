@@ -6,5 +6,13 @@
     "authMethod": "jwt",
     "dataSensitivity": "internal",
     "path": "P360/P360-133/java/2025-05-22T16-20-06-057Z"
+  },
+  {
+    "timestamp": "2025-05-22T19-58-20-416Z",
+    "language": "react",
+    "securityLevel": "medium",
+    "authMethod": "jwt",
+    "dataSensitivity": "internal",
+    "path": "P360/P360-133/react/2025-05-22T19-58-20-416Z"
   }
 ]
