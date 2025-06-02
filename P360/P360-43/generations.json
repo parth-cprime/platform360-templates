@@ -662,5 +662,13 @@
     "authMethod": "jwt",
     "dataSensitivity": "internal",
     "path": "P360/P360-43/generations/2025-05-29T14-53-28-649Z-java"
+  },
+  {
+    "timestamp": "2025-06-02T20-21-50-291Z",
+    "language": "java",
+    "securityLevel": "medium",
+    "authMethod": "jwt",
+    "dataSensitivity": "internal",
+    "path": "P360/P360-43/generations/2025-06-02T20-21-50-291Z-java"
   }
 ]
