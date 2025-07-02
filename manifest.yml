@@ -1,0 +1,22 @@
+```yaml
+modules:
+  jira:issuePanel:
+    - key: test-app-panel
+      resource: main
+      resolver:
+        function: resolver
+      title: Test app
+      icon: images/icon.svg
+app:
+  id: test-app
+  name: Test app
+permissions:
+  scopes:
+    - 'read:jira-work'
+resources:
+  - key: main
+    path: static/hello-world/build
+functions:
+  - key: resolver
+    handler: index.run
+```
