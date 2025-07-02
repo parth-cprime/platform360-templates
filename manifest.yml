@@ -1,22 +1,23 @@
 ```yaml
+manifestVersion: 1
+id: 'test2'
+name: 'test2'
+description: 'A helpful Forge application'
+version: '1.0.0'
+scopes:
+  - 'read:jira-work'
+  - 'read:jira-user'
+  - 'storage:app'
 modules:
   jira:issuePanel:
-    - key: test-app-panel
+    - key: issue-panel
+      function: main
       resource: main
-      resolver:
-        function: resolver
-      title: Test app
-      icon: images/icon.svg
-app:
-  id: test-app
-  name: Test app
-permissions:
-  scopes:
-    - 'read:jira-work'
 resources:
   - key: main
-    path: static/hello-world/build
-functions:
-  - key: resolver
-    handler: index.run
+    path: src/index.tsx
+app:
+  runtime:
+    name: nodejs18.x
+  id: ari:cloud:ecosystem::app/test2
 ```
