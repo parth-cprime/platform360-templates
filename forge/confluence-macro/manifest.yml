@@ -1,0 +1,35 @@
+manifestVersion: 1
+id: '{{appId}}'
+name: '{{appName}}'
+description: '{{description}}'
+version: '1.0.0'
+scopes:
+  - 'read:confluence-content-details'
+  - 'read:confluence-space-details'
+  - 'read:confluence-user'
+  - 'storage:app'
+modules:
+  confluence:macro:
+    - key: macro
+      function: main
+      title: '{{appName}}'
+      description: '{{description}}'
+      parameters:
+        - key: title
+          name: Title
+          description: Optional title for the macro
+          type: string
+          required: false
+        - key: showMetadata
+          name: Show Metadata
+          description: Display page metadata
+          type: boolean
+          defaultValue: true
+          required: false
+resources:
+  - key: main
+    path: src/index.tsx
+app:
+  runtime:
+    name: nodejs18.x
+  id: ari:cloud:ecosystem::app/{{appId}}
