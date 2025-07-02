@@ -1,22 +1,30 @@
 ```markdown
-# Test app
+# test2
 
-## Description
-A helpful Forge application for Jira issue panels.
+A helpful Forge application designed to be used as a Jira Issue Panel. This application provides detailed insights into Jira issues, including status, priority, assignee, reporter, creation and update dates, and a custom view count feature to track the number of times the issue panel has been accessed.
 
 ## Features
-- Displays a greeting message.
-- Shows the current issue key to the user.
 
-## Development setup
-1. Clone the repository.
-2. Install dependencies with `npm install`.
-3. Run `forge register` to register a new copy of this app in your Forge account.
+- Display issue key, status, priority, assignee, reporter, created and updated dates.
+- Custom view count feature that tracks and displays the number of times the issue panel is viewed.
+- Refresh button to update issue details in real-time.
+
+## Setup
+
+1. Clone this repository.
+2. Navigate into the project directory and run `forge register` to register a new Forge app.
+3. Modify the `manifest.yml`, `src/index.tsx`, and `package.json` files according to your needs.
 4. Run `forge deploy` to deploy your changes.
-5. Install the app in your Jira site with `forge install`.
+5. Run `forge install` and follow the prompts to install the app in your Atlassian site.
+6. Navigate to any Jira issue in your site to see the app in action.
 
-## Usage
-After installation, navigate to any Jira issue in your site. You will see the "Test app" panel on the issue view, displaying a greeting message and the issue key.
+## Development and Contributions
+
+Feel free to fork the repository and submit pull requests with new features or fixes. Ensure to follow best practices and keep the application performance in mind.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
 ```
 
-These files constitute a complete, production-ready Forge app setup for a Jira issue panel application named "Test app". Be sure to follow the instructions in the README.md for setup and deployment.
+These files are now production-ready, following Atlassian best practices. Ensure to register and deploy your app using the Atlassian Forge CLI as described in the README.md.
