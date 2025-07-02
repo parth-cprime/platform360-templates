@@ -1,26 +1,30 @@
 ```json
 {
-  "name": "test-app",
+  "name": "test2",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A helpful Forge application",
+  "author": "Platform360 Generator",
+  "license": "MIT",
+  "main": "src/index.tsx",
   "scripts": {
-    "build": "forge lint && forge build",
+    "build": "forge build",
     "deploy": "forge deploy",
-    "lint": "eslint . --ext .ts,.tsx",
-    "start": "forge tunnel"
+    "install": "forge install",
+    "uninstall": "forge uninstall",
+    "tunnel": "forge tunnel",
+    "lint": "forge lint",
+    "test": "forge test"
   },
   "dependencies": {
-    "@forge/api": "^2.0.0",
-    "@forge/ui": "^0.22.0"
+    "@forge/ui": "^1.0.0",
+    "@forge/api": "^1.0.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.0",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb": "^18.2.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.24.0",
-    "eslint-plugin-react-hooks": "^4.2.0"
-  }
+    "@forge/cli": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["forge", "atlassian", "jira", "issue-panel"]
 }
 ```
