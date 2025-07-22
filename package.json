@@ -1,17 +1,30 @@
 {
-  "name": "test3",
+  "name": "demo",
   "version": "1.0.0",
-  "description": "A Forge application",
+  "description": "A helpful Forge application",
+  "author": "Platform360 Generator",
+  "license": "MIT",
   "main": "src/index.tsx",
   "scripts": {
     "build": "forge build",
     "deploy": "forge deploy",
-    "install": "forge install"
+    "install": "forge install",
+    "uninstall": "forge uninstall",
+    "tunnel": "forge tunnel",
+    "lint": "forge lint",
+    "test": "forge test"
   },
   "dependencies": {
-    "@forge/ui": "^1.0.0"
+    "@forge/ui": "^1.0.0",
+    "@forge/api": "^1.0.0"
   },
   "devDependencies": {
     "@forge/cli": "^6.0.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["forge", "atlassian", "jira", "issue-panel"]
 }
+
+### README.md
